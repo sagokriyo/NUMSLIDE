@@ -68,6 +68,12 @@ var _press_cell := -1
 var _press_pos := Vector2.ZERO
 var _pressing := false
 var _busy := false
+## Multiplies every move's duration. THE AUTO-SOLVE TURNS IT DOWN: the solver's
+## line for a 5x5 runs to a couple of hundred moves, and at the pace a finger
+## moves a tile that is half a minute of the player watching a board solve
+## itself. The conductor sets it so the whole line plays in a few seconds and
+## puts it back afterwards.
+var pace_scale := 1.0
 var _cell_px := 100.0
 var _gap := 6.0
 var _origin := Vector2.ZERO
@@ -418,7 +424,7 @@ func _play(events: Array, on_done: Callable) -> void:
 			"blocked":
 				_play_blocked(e)
 			"cleared":
-				longest = maxf(longest, TileView.slide_dur())
+				longest = maxf(longest, TileView.slide_dur() * pace_scale)
 			"solved":
 				pass
 	var wait := maxf(longest, 0.01)
@@ -435,7 +441,7 @@ func _play(events: Array, on_done: Callable) -> void:
 func _play_slide(e: Dictionary) -> float:
 	var pairs: Array = e.get("pairs", [])
 	var values: PackedInt32Array = e.get("values", PackedInt32Array())
-	var dur := TileView.slide_dur()
+	var dur := TileView.slide_dur() * pace_scale
 	for k in pairs.size():
 		var pair: Vector2i = pairs[k]
 		var value: int = values[k] if k < values.size() else _value_in(pair.x)
@@ -454,7 +460,7 @@ func _play_slide(e: Dictionary) -> float:
 ## swapping places, and turning is the whole idea of the mode.
 func _play_twist(e: Dictionary) -> float:
 	var pairs: Array = e.get("pairs", [])
-	var dur := TileView.slide_dur() * 1.6
+	var dur := TileView.slide_dur() * 1.6 * pace_scale
 	var centre := pivot_pos(int(e.get("pivot", 0)))
 	var cw: bool = bool(e.get("cw", true))
 	for pair_v in pairs:

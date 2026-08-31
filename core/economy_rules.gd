@@ -67,12 +67,12 @@ const ROUND_POINTS := 100
 ## What each GRADE adds to a solved board. The ladder pays for precision:
 ## Steady is "you finished" and pays nothing, Perfect means you barely wasted a
 ## move and pays the most. A board finished with the solver's help ("assisted")
-## pays a token bonus, so asking for the answer still banks something without
-## out-earning a run the player actually read.
+## pays NOTHING: asking for the answer is free, and it earns exactly what it
+## cost you. See series_score, which zeroes the whole score for an assisted run.
 ##
 ## Every grade id in `Pace.LADDER` must be here, plus Pace.ASSISTED; the
 ## progression suite fails when the two drift.
-const PACE_BONUS := {"steady": 0, "sharp": 60, "expert": 180, "perfect": 450, "assisted": 40}
+const PACE_BONUS := {"steady": 0, "sharp": 60, "expert": 180, "perfect": 450, "assisted": 0}
 
 ## Coins for building 2048, and every doubling above it, PAID EVERY TIME — in the
 ## modes listed below and nowhere else.
@@ -594,7 +594,13 @@ static func pace_bonus(pace_id: String) -> int:
 ## The series score: ROUND_POINTS per round won, plus the rival's bonus when the
 ## series was won. A lost series still scores its rounds, so a 2-3 loss to Sage
 ## is worth more than a 0-3 one. Never negative.
+##
+## AN ASSISTED RUN SCORES ZERO. The solver did the solving, so the board earns
+## nothing at all: no round points, no bonus, and downstream no coins and no
+## best. It is still a game played; that is stats, not reward.
 static func series_score(rounds_won: int, won: bool, pace_id: String) -> int:
+	if pace_id == Pace.ASSISTED:
+		return 0
 	var score: int = maxi(0, rounds_won) * ROUND_POINTS
 	if won:
 		score += pace_bonus(pace_id)

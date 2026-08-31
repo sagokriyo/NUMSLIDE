@@ -152,9 +152,8 @@ func _test_series_score() -> void:
 		3 * EconomyRules.ROUND_POINTS + int(EconomyRules.PACE_BONUS["perfect"]))
 	check_eq("three rounds against Perfect, lost: no bonus",
 		EconomyRules.series_score(3, false, "perfect"), 3 * EconomyRules.ROUND_POINTS)
-	check_eq("an assisted board pays its token bonus",
-		EconomyRules.series_score(3, true, Progression.ASSISTED_RUN),
-		3 * EconomyRules.ROUND_POINTS + int(EconomyRules.PACE_BONUS["assisted"]))
+	check_eq("an assisted board scores nothing at all",
+		EconomyRules.series_score(3, true, Progression.ASSISTED_RUN), 0)
 	check_eq("a negative round count scores nothing", EconomyRules.series_score(-2, false, "steady"), 0)
 	check_eq("an unknown grade pays no bonus", EconomyRules.pace_bonus("nobody"), 0)
 
@@ -246,16 +245,20 @@ func _test_lost_series() -> void:
 	_series("classic", false, 0, 3, "steady")
 	check_eq("a 0-3 loss is a game played", int(GameStats.get_stat("games_played")), 3)
 
-# --- Pass-and-play is nobody's record -----------------------------------------------
+# --- An assisted board is a game played and nothing more --------------------------
 func _test_assisted_run() -> void:
 	print("test_assisted_run:")
 	var games0: int = int(GameStats.get_stat("games_played"))
-	_series("twist", true, 3, 2, Progression.ASSISTED_RUN)
+	var coins0: int = Wallet.coins()
+	var gems0: int = Wallet.gems()
+	var lines := _series("twist", true, 3, 2, Progression.ASSISTED_RUN)
 	check("an assisted board leaves no mode record", not GameStats.has_mode_record("twist"))
 	check("an assisted board earns no crown", not Achievements.is_unlocked("twist_series"))
 	check_eq("an assisted board is still a game played", int(GameStats.get_stat("games_played")), games0 + 1)
-	check_eq("an assisted board still posts a best series", Progression.best_score("twist"),
-		EconomyRules.series_score(3, true, Progression.ASSISTED_RUN))
+	check_eq("an assisted board posts no best series", Progression.best_score("twist"), 0)
+	check_eq("an assisted board pays no coins", Wallet.coins(), coins0)
+	check_eq("an assisted board pays no gems", Wallet.gems(), gems0)
+	check("an assisted board writes no receipt", lines.is_empty())
 	check_eq("an assisted board leaves the win streak alone",
 		int(GameStats.get_stat("current_win_streak")), 0)
 

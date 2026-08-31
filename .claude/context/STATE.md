@@ -5,8 +5,8 @@
 > [JOURNAL.md](./JOURNAL.md); the map is [ARCHITECTURE.md](../../ARCHITECTURE.md);
 > the rules of the road are [CLAUDE.md](../../CLAUDE.md).
 
-**Last updated:** 2026-08-31 · **Updated by:** the session that built NUMSLIDE on
-the Tic Tac Toe Limitless shell.
+**Last updated:** 2026-08-31 · **Updated by:** the session that rebuilt the
+auto-solve (threaded, on-board in every mode, assisted runs pay nothing).
 
 ---
 
@@ -54,6 +54,12 @@ rules, not a sixth board.
   `SlideSolver`, `Pace`, `CubeSolid`.
 - **Gameplay built:** conductor, `BoardView` + `TileView`, `CubeView`,
   `SlideHud`. Undo, hints, auto-solve, pause, save/resume, Rush's clock.
+- **Auto-solve rebuilt (2026-08-31):** a Solve pill on the controls row in
+  EVERY mode (it was hidden in the pause sheet and skipped the timed modes).
+  The search runs on a worker `Thread` with a 15 s leash, so the app never
+  freezes and the hard 5×5s that died at the old main-thread deadline solve.
+  On Rush the line ends at `cleared`, the conductor banks and re-deals, and
+  the run continues assisted. The clock stops while the solver thinks/plays.
 - **Painters swapped:** `MarkFace` (the X and O) is gone; `TileFace` paints the
   numeral. Every caller moved: the tray, the Continue glimpse, the Splash, the
   drifting shard field, the theme cards, the Shop strip, the medal tool.
@@ -75,3 +81,6 @@ rules, not a sixth board.
 - A scramble is a WALK out of the solved position, never a shuffle.
 - `apply` on a rule has no side effects. The solver searches on it.
 - One move = one player action. A tap that shifts three tiles counts once.
+- An ASSISTED run pays NOTHING: no score, no coins, no best, no bounty
+  progress, no solve badge. It is still a game played (stats, history). The
+  mark persists in the session save and, on Rush, taints the whole run.

@@ -26,6 +26,7 @@ func run_tests() -> void:
 	await _test_blind_hides()
 	await _test_undo()
 	await _test_helpline_pills()
+	await _test_solve_button()
 	await _test_every_mode_deals_a_board()
 	await _test_premium_gate()
 
@@ -214,6 +215,35 @@ func _test_helpline_pills() -> void:
 	check("the two states do not read the same",
 		String(hint.text) != "Hint · %d" % free_hints)
 
+# --- Solve it for me: on the board, off the ladder, off the payroll ---------------
+## The solver's door is a pill on the controls row, in every mode. Pressing it
+## runs the search on a worker thread, plays the line out on the tray, marks
+## the run assisted and pays NOTHING for the board it closed.
+func _test_solve_button() -> void:
+	print("test_solve_button:")
+	var gp: Variant = await _open("classic", {"size": 3})
+	if gp == null:
+		return
+	var btn: Variant = gp.get("_solve_btn")
+	check("the solve pill sits on the board, not in a sheet", btn != null)
+	if btn == null:
+		return
+	check_eq("it says what it does", String(btn.text), "Solve")
+	var coins0: int = Wallet.balance(WalletRules.COINS)
+	var gems0: int = Wallet.balance(WalletRules.GEMS)
+	gp._on_solve()
+	check("the tap arms the solve", bool(gp.get("_solving")))
+	check("the tray is off while it thinks", not bool(gp._view.interactive))
+	var ended := await await_until(func() -> bool: return bool(gp.get("_ended")), 6000)
+	check("the solver brings the board home", ended)
+	if not ended:
+		return
+	check("the board really is home", gp._board.is_solved())
+	check("the run is marked assisted", bool(gp.get("_assisted")))
+	check("the solve is done with the tray", not bool(gp.get("_solving")))
+	check_eq("an assisted solve pays no coins", Wallet.balance(WalletRules.COINS), coins0)
+	check_eq("an assisted solve pays no gems", Wallet.balance(WalletRules.GEMS), gems0)
+
 ## Every mode deals a live board the moment it opens, and never asks anything.
 func _test_every_mode_deals_a_board() -> void:
 	print("test_every_mode_deals_a_board:")
@@ -232,6 +262,8 @@ func _test_every_mode_deals_a_board() -> void:
 		check("%s: the rule it names is the rule it runs" % m.id,
 			gp._rules.rule_id() == m.rule)
 		check("%s: something is legal on it" % m.id, not gp._rules.legal_moves(gp._board).is_empty())
+		# The solver's door is on every board, the timed ones included.
+		check("%s: the solve pill is on the board" % m.id, gp.get("_solve_btn") != null)
 	EntitlementManager.revoke_premium("_regr_flow")
 
 # --- The premium gate ------------------------------------------------------------------------

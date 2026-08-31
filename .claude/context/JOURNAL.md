@@ -5,7 +5,50 @@
 
 ---
 
-## 2026-08-31 — NUMSLIDE, built on the Tic Tac Toe shell
+## 2026-08-31 — Auto-solve rebuilt: threaded, on-board, and free of reward
+
+**Request:** "Solve it for me" was not working; put it on the game screen
+rather than in the pause sheet; make it work in every mode without crashing or
+lagging; a solved board earns no rewards.
+
+**What was actually wrong.** The solve ran on the MAIN thread with a 6 s
+deadline: a 4×4 froze the app for a second, a hard 5×5 froze it for six and
+then gave up anyway (measured 1 board in 24 at the old budget). And the button
+only existed inside the pause sheet, gated off every timed mode, so on Rush
+the feature simply did not exist.
+
+**Changes.**
+- `gameplay.gd`: a Solve pill on the controls row beside Undo and Hint, in
+  every mode. The search runs on a worker `Thread` over a snapshot
+  (`_board.clone()` + a fresh `SlideRules.make`) and answers through
+  `call_deferred`; the pill says "Solving…", the tray is off, input and
+  restart/size/back are guarded, and `_exit_tree` joins the thread. The clock
+  (`_ticking`) stops while the solver thinks and plays. Playback now handles
+  Rush's `cleared`: the conductor banks, re-deals, hands the tray back and the
+  run continues, assisted. `_assisted` persists in the session save so
+  quitting mid-playback cannot launder the run. Pause sheet entry removed.
+- `solver.gd`: `solve()` takes a `budget_ms` (default unchanged); the
+  auto-solve passes 15 s, affordable now that nothing freezes. 168/168 boards
+  across classic 3/4/5, lock, twist, fog and sprint solve at that leash.
+- **No rewards for assisted runs:** `EconomyRules.series_score` returns 0 for
+  ASSISTED (bonus 40 → 0); `Progression._bank_series` skips the best, the
+  payout and the bounty progress (stats and history still count the game);
+  the conductor skips `Achievements.report_solve`. On Rush, a solver-touched
+  run grades ASSISTED at time-up whatever it cleared.
+- `slide_hud.gd`: the grade strip latches to "Assisted" once the solver
+  touches the run instead of counting a ladder that can no longer be earned.
+- `pace.gd`: the Assisted line now says it pays nothing.
+
+**Verified.** Full tier 19/19 green. New coverage: `flow_gameplay`
+`test_solve_button` (pill on the board, threaded solve brings a 3×3 home,
+run marked assisted, zero coins and gems paid) plus a per-mode "the solve
+pill is on the board" check; `test_progression` re-pins assisted = no score,
+no best, no coins, no gems, no receipt. Probe stills at 443×963: Classic
+shows Undo · Hint · Solve, Rush shows Hint · Solve; nothing overflows.
+
+**Noted, not touched.** `flow_gameplay`'s `test_blind_hides` silently skips
+when the dev save has premium revoked at flow start (Blind routes to the
+paywall and `_open` returns null before any check prints). Pre-existing.
 
 The whole game, from an empty repo to a green Full tier.
 

@@ -209,7 +209,13 @@ func _empty_state(title_text: String, subtitle: String) -> Control:
 	var cta := UI.tappable(func(): SceneRouter.goto(SceneRouter.Route["HOME"]), 2)
 	var cta_row := UI.hbox(0)
 	cta_row.alignment = BoxContainer.ALIGNMENT_CENTER
-	cta_row.add_child(UI.label("Play  →", DesignSystem.TYPE_BODY, "accent", HORIZONTAL_ALIGNMENT_CENTER))
+	# AUTOWRAP OFF, and the flag is the whole fix. UI.label wraps by default, and
+	# a wrapping Label reports a minimum width of one pixel — so an HBox that is
+	# not expanding it hands it that one pixel and "Play  →" comes out as a
+	# column of single characters. A two-word button has nothing to reflow.
+	var cta_lbl := UI.label("Play  →", DesignSystem.TYPE_BODY, "accent", HORIZONTAL_ALIGNMENT_CENTER)
+	cta_lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
+	cta_row.add_child(cta_lbl)
 	cta.add_child(cta_row)
 	box.add_child(cta)
 	card.add_child(box)

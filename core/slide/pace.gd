@@ -7,9 +7,9 @@ extends RefCounted
 ## side of the board is a game with no stakes. So the board itself sets the
 ## terms: every scramble is dealt with a PAR, and the run is graded on how far
 ## under it you came home. Par is not a designer's guess, it is derived from the
-## board actually dealt (its total tile distance), so a shallow scramble asks
-## less and a brutal one asks more, and the grade means the same thing on every
-## board of every size.
+## board actually dealt — an estimate of how long that board's own shortest
+## solution is — so a shallow scramble asks less and a brutal one asks more, and
+## the grade means the same thing on every board of every size.
 ##
 ## The four tiers are a LADDER, exactly as the sibling project's rivals were,
 ## and they plug into the same machinery: `Progression` banks a rung, the win
@@ -21,8 +21,8 @@ const STEADY := "steady"
 const SHARP := "sharp"
 const EXPERT := "expert"
 const PERFECT := "perfect"
-## A board finished with the solver's help. Off the ladder entirely: it pays a
-## token bonus, moves no streak and sets no record. The honest result of asking
+## A board finished with the solver's help. Off the ladder entirely: it pays
+## nothing, moves no streak and sets no record. The honest result of asking
 ## for the answer.
 const ASSISTED := "assisted"
 
@@ -44,7 +44,7 @@ const LINES := {
 	SHARP: "Under par. Clean run.",
 	EXPERT: "Well under par. That was read, not guessed.",
 	PERFECT: "You barely wasted a move.",
-	ASSISTED: "Solved with help. It does not count for the ladder.",
+	ASSISTED: "Solved with help. This one pays nothing.",
 }
 
 ## The hue each grade wears, for the pips and the run-over card.
@@ -56,11 +56,26 @@ const HUES := {
 	ASSISTED: Color("6E7C90"),
 }
 
-## The multiples of the board's own distance each grade is worth. A run is
-## graded against the first one of these it comes in under.
-const PERFECT_FACTOR := 0.95
-const EXPERT_FACTOR := 1.20
-const SHARP_FACTOR := 1.60
+## What the board is really asking: an estimate of the OPTIMAL solution, taken
+## off `SlideSolver.distance` (Manhattan plus linear conflict).
+##
+## IT IS NOT THE DISTANCE ITSELF, and that was the bug the ladder shipped with.
+## Distance is a LOWER BOUND on the moves left, not a solution length — on a
+## sliding puzzle the two are far apart, because every tile you place walks the
+## hole a long way round to place the next one. Measured over random 3x3 deals
+## the optimal line runs 1.47x the distance on average, so a par set at 1.20x it
+## put Perfect and Expert BELOW the shortest line the board had, and every run
+## graded Steady or Sharp however well it was played. A player cannot be asked
+## for fewer moves than the puzzle contains.
+const SOLUTION_FACTOR := 1.45
+
+## The multiples of that estimate each grade is worth. A run is graded against
+## the first one of these it comes in under. Perfect is "you played it more or
+## less optimally", and on the measured sample an optimal line earns it on about
+## seven boards in eight.
+const PERFECT_FACTOR := 1.10
+const EXPERT_FACTOR := 1.45
+const SHARP_FACTOR := 2.00
 
 ## The floor a par is never set below, so a nearly-solved board still asks for
 ## something and a three-move finish is not automatically Perfect.
@@ -80,16 +95,22 @@ static func line(id: String) -> String:
 static func hue(id: String) -> Color:
 	return HUES.get(id, Color("8FA6C4"))
 
-## The par for a board as it was DEALT: its total tile distance, floored. Read
-## once when the run begins, never recomputed, or the target would move every
-## time the player made progress.
+## The par for a board as it was DEALT: what an Expert run of it would cost.
+## Read once when the run begins, never recomputed, or the target would move
+## every time the player made progress.
 static func par_for(board: SlideBoard) -> int:
 	if board == null:
 		return PAR_FLOOR
-	return maxi(PAR_FLOOR, int(round(float(board.manhattan()) * EXPERT_FACTOR)))
+	return maxi(PAR_FLOOR, int(round(solution_estimate(board) * EXPERT_FACTOR)))
 
-## The distance a par was derived from, recovered from the par itself. Grading
-## works off this so a saved run only has to carry one number.
+## Roughly how many moves this board actually takes to solve.
+static func solution_estimate(board: SlideBoard) -> float:
+	if board == null:
+		return 0.0
+	return float(SlideSolver.distance(board)) * SOLUTION_FACTOR
+
+## The solution estimate a par was derived from, recovered from the par itself.
+## Grading works off this so a saved run only has to carry one number.
 static func distance_of(par: int) -> float:
 	return float(par) / EXPERT_FACTOR
 

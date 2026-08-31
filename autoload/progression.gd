@@ -38,10 +38,10 @@ extends Node
 ## this autoload when the economy landed — every payout below calls into it, and
 ## an autoload may only reference those declared before it.
 
-## A board the solver finished for you. It is banked (it was played, it pays),
-## but it is nobody's RECORD: no crown, no mastery, no win streak, no grade on
-## the ladder. Matches the conductor's own id and the "assisted" key in
-## EconomyRules.PACE_BONUS.
+## A board the solver finished for you. It is banked as a game played, but it
+## pays and sets NOTHING: no coins, no score, no best, no crown, no mastery,
+## no win streak, no grade on the ladder. Matches the conductor's own id and
+## the "assisted" key in EconomyRules.PACE_BONUS.
 const ASSISTED_RUN := Pace.ASSISTED
 
 ## Per-mode best SERIES score, keyed by mode id. One shared store so every mode
@@ -390,8 +390,8 @@ func last_tile_milestone() -> Dictionary:
 ##   elapsed        wall-clock seconds the series took
 ##
 ## WHAT COUNTS. A pass-and-play series is banked but is nobody's record (see
-## ASSISTED_RUN): a board the solver closed out earns its coins and nothing
-## else.
+## ASSISTED_RUN): a board the solver closed out is a game played and nothing
+## more — no score, no coins, no best, no bounty progress.
 func record_series(mode_id: String, won: bool, rounds_won: int, rounds_lost: int,
 		pace_id: String, used_undo: bool, elapsed: float) -> void:
 	var mode := GameModes.get_mode(mode_id)
@@ -415,7 +415,7 @@ func record_series(mode_id: String, won: bool, rounds_won: int, rounds_lost: int
 					Achievements.unlock(mastery)
 			if pace_id == Pace.PERFECT:
 				Achievements.unlock("perfect_pace")
-	if rounds_won > 0:
+	if duel and rounds_won > 0:
 		_advance_bounties(Bounties.KIND_ROUNDS, rounds_won)
 	if won and rung > 0:
 		_advance_bounties(Bounties.KIND_PACE, rung)
@@ -471,9 +471,14 @@ func conclude(mode_id: String, score: int, highest: int, won: bool, elapsed: flo
 ## a series that was played is a game played, whatever it scored.
 func _bank_series(mode_id: String, score: int, won: bool, rounds_won: int,
 		rounds_lost: int, pace_rung: int, pace_id: String, elapsed: float) -> void:
+	# AN ASSISTED RUN PAYS NOTHING AND SETS NOTHING. It is a game played and it
+	# lands in the stats and the history, but there is no best to post (it
+	# scored zero), no payout, no bounty progress — a board the solver closed
+	# out is the solver's result, not the player's.
+	var rewarded := pace_id != ASSISTED_RUN
 	# A new record on this board is what the best bonus pays for, so it is
 	# noted before the payout reads it.
-	if submit_best(mode_id, score):
+	if rewarded and submit_best(mode_id, score):
 		_new_bests_this_run = 1
 	GameStats.record_series(score, won, rounds_won, rounds_lost, pace_rung, elapsed, mode_id)
 	GameStats.add_score_entry(score, mode_id, pace_id, won)
@@ -481,8 +486,9 @@ func _bank_series(mode_id: String, score: int, won: bool, rounds_won: int,
 	# always evaluated against THIS series' result — never a stale one.
 	var streak_days: int = int(GameStats.get_stat("current_streak_days"))
 	Achievements.report_streak(streak_days)
-	_pay_for_run(mode_id, score, won, streak_days)
-	_advance_bounties(Bounties.KIND_RUNS, 1)
+	if rewarded:
+		_pay_for_run(mode_id, score, won, streak_days)
+		_advance_bounties(Bounties.KIND_RUNS, 1)
 	# Free tier only: count the completed game and arm an interstitial if due. It
 	# is PRESENTED later, via present_pending_ad(), so it never covers the
 	# series-over modal.

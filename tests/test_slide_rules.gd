@@ -261,11 +261,34 @@ func _test_blind() -> void:
 	check("the hole stays lit", seen.has(b.blank()))
 	for nb in b.neighbours(b.blank()):
 		check("and so does what touches it", seen.has(nb))
-	# A tile that is home stays lit: the island of the known is the only map the
-	# player gets, and without it the mode is a memory test with no board in it.
-	for i in b.size():
-		if b.at(i) != SlideBoard.BLANK and b.is_home(i):
-			check("a tile that is home stays lit", seen.has(i))
+	# THE ROW IS THE UNIT, NOT THE TILE. A tile that happened to be home lit for
+	# one slide and went out again on the next, so the board flickered and none
+	# of it meant anything. A row is a thing the player finishes.
+	var lit := RulesFog.lit_rows(b)
+	for row in lit:
+		for x in b.w:
+			check("every cell of a lit row shows its number",
+				seen.has(b.index(x, int(row))))
+	for y in b.h:
+		if RulesFog.row_is_home(b, y):
+			check("a row that is home is lit", Array(lit).has(y))
+
+	# AND IT LATCHES. Breaking a finished row open to free the hole below it is
+	# the move the player most needs to be able to read, so the row stays lit.
+	var lb := r.new_board()
+	lb.moves = 1
+	r.sync(lb)
+	check_eq("every row of a finished board is lit", RulesFog.lit_rows(lb).size(), lb.h)
+	for mv in r.unit_moves(lb):
+		r.apply(lb, mv)
+		break
+	check_eq("a row broken open stays lit", RulesFog.lit_rows(lb).size(), lb.h)
+	check_eq("and its numbers are still readable",
+		r.visible_cells(lb).size(), lb.size())
+	# An undo hands the dark back with the position: sync rebuilds from scratch.
+	r.sync(lb)
+	check("stepping back over the move that lit a row hands the dark back",
+		RulesFog.lit_rows(lb).size() < lb.h)
 
 func _test_rush() -> void:
 	print("test_rush:")

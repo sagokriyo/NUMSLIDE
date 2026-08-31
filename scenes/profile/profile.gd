@@ -400,56 +400,33 @@ func _player_card() -> Control:
 	return card
 
 # --- 2. Balance ---------------------------------------------------------------
-## The purse, stated. The strip is the live CurrencyHud — one source of truth for
-## what a balance looks like across the app — and every pill routes to the Shop
-## on its own, so this card adds only the line that says so.
+## The purse, stated. One row per number: its token, its name, the figure, and
+## what the figure is FOR — the last of which is the only reason a whole panel
+## beats the three-pill strip Home wears.
 func _balance_card() -> Control:
 	var box := VBoxContainer.new()
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", int(DesignSystem.SPACE_MD))
 
-	var card := _card(2)
-	# The tighter pad GlassPanel exposes for dense content (Statistics' stat cells
-	# use it for the same reason). The shared CurrencyHud is the widest fixed
-	# widget on the page at 583pt of hard minimum, and the default card air around
-	# it is what tipped this panel past the 982 budget.
-	if card is GlassPanel:
-		(card as GlassPanel).content_margin = DesignSystem.SPACE_MD
-	var col := VBoxContainer.new()
-	col.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	col.add_theme_constant_override("separation", int(DesignSystem.SPACE_SM))
-	card.add_child(col)
-	# The strip rides in a sideways scroller with the bar hidden. The HUD's own
-	# documented worst case is ~700px (three spelled-out balances), and beside
-	# this page's 236pt rail that CANNOT be guaranteed inside the 981 budget —
-	# a maxed purse used to push the whole panel wide and clip the top bar's
-	# gear. The scroller absorbs the overflow instead: at everyday balances it
-	# never engages, at "99,999 of everything" the strip pans. Pill taps keep
-	# working — make_scroll_tappable exists exactly for taps inside scrollers.
-	var strip := ScrollContainer.new()
-	strip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	strip.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
-	strip.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	var hud := CurrencyHud.new()
-	hud.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	strip.add_child(hud)
-	col.add_child(strip)
-	box.add_child(card)
+	# NO CURRENCY STRIP HERE. The shared CurrencyHud is built for a FULL-WIDTH
+	# page (Home, the Shop): three pills need ~866pt and this panel sits beside a
+	# 236pt rail with 553 left over, so the leaderboard pill was always sliced
+	# through its own number. The sideways scroller that was meant to absorb that
+	# did not read as a scroller, it read as three balances running off the page —
+	# and the strip was saying, in a clipped shorthand, exactly what the three
+	# rows below it say in full. One statement of a number per panel.
 
-	# WHAT each pill is for. The strip states three numbers and explains none of
-	# them, which was fine when it was one card in a scrolling stack and is not
-	# fine now that it is a whole panel — a section with room to spare should use
-	# it to answer the question the numbers raise.
+	# WHAT each number is for. A section with room to spare should use it to
+	# answer the question the figures raise.
 	box.add_child(_purse_row("currency_coins", "Coins",
 		"Undos, retries and sweeps.", Wallet.coins()))
 	box.add_child(_purse_row("currency_gems", "Gems",
 		"Themes and upgrades. Kept for good.", Wallet.gems()))
-	# The strip's THIRD pill, explained on the same terms as the two balances —
-	# which is the only reason it is in a section called Balance. It replaced the
-	# energy meter, it is not a currency, and a player who taps it expecting to
-	# spend something is exactly who this row is written for. Tappable, unlike
-	# the two above it: those lead to the Shop through their own "+", while this
-	# one IS its destination.
+	# The best score, on the same terms as the two balances — which is the only
+	# reason it is in a section called Balance. It is not a currency, and a player
+	# who taps it expecting to spend something is exactly who this row is written
+	# for. Tappable, unlike the two above it: those lead to the Shop through the
+	# section's own action, while this one IS its destination.
 	#
 	# TITLED FOR ITS NUMBER, not for its destination. "Leaderboard" is a 293pt
 	# label at this size — against "Coins" at 131 — and this panel sits beside a
@@ -495,9 +472,8 @@ const _PURSE_HUES := {
 
 ## One row of the Balance panel: its token, its name, its number, and what that
 ## number is FOR. Used for the two currencies and for the leaderboard, which is
-## not one — the shape is shared because the STRIP shares it, and a third row
-## built differently would imply the third pill is a different kind of thing to
-## tap than it looks.
+## not one — the shape is shared on purpose, because a third row built
+## differently would imply the best score is a third thing to spend.
 const PURSE_SLOT := 196.0
 
 func _purse_row(icon_id: String, name_text: String, why: String, amount: int) -> Control:

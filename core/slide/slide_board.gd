@@ -166,6 +166,9 @@ func tile_count() -> int:
 func set_adjacency(table: Array[PackedInt32Array]) -> void:
 	_adj = table
 	_shape_id = _make_shape_key()
+	# A new topology is a new set of distances. Dropping the handle re-resolves
+	# it on the next lookup, against the key this adjacency just produced.
+	_hop_table = []
 
 ## The cells a tile at `i` could slide into if they were empty.
 func neighbours(i: int) -> PackedInt32Array:
@@ -338,18 +341,29 @@ func manhattan() -> int:
 	return total
 
 ## Cached breadth-first hop counts between cells, shared between clones. Built
-## lazily per board shape; a flat grid could do this with arithmetic, but the
-## cube cannot and one path keeps the heuristic honest on both.
+## lazily per board shape; a flat grid could do this with arithmetic, but a
+## torus cannot and one path keeps the heuristic honest on both.
 static var _hops: Dictionary = {}
+## This board's own handle on that table, so a lookup is two array indexes.
+##
+## THE SHAPE KEY IS TWO HUNDRED CHARACTERS LONG. Reaching the shared table
+## through it on every call meant hashing that string once per TILE per distance
+## reading, and the solver takes a distance reading at every node of every
+## search — it was more than half the cost of a solve, and one IDA* pass over
+## twenty thousand nodes spent eleven seconds almost entirely inside a dictionary
+## lookup that returns the same array every time. Resolved once per board and
+## carried across `clone`, which is the whole point of keying it by shape.
+var _hop_table: Array = []
 
 func hops_between(a: int, b: int) -> int:
 	if a < 0 or b < 0 or a >= cells.size() or b >= cells.size():
 		return 0
-	var table: Array = _hops.get(_shape_id, [])
-	if table.is_empty():
-		table = _build_hops()
-		_hops[_shape_id] = table
-	var row: PackedInt32Array = table[a]
+	if _hop_table.is_empty():
+		_hop_table = _hops.get(_shape_id, [])
+		if _hop_table.is_empty():
+			_hop_table = _build_hops()
+			_hops[_shape_id] = _hop_table
+	var row: PackedInt32Array = _hop_table[a]
 	return row[b]
 
 ## The cache key for this board's SHAPE, built ONCE when the adjacency lands and
@@ -446,6 +460,7 @@ func clone() -> SlideBoard:
 	b._home = _home
 	b._adj = _adj
 	b._shape_id = _shape_id
+	b._hop_table = _hop_table
 	if not meta.is_empty():
 		b.meta = meta.duplicate(true)
 	return b

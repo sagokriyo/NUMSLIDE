@@ -33,6 +33,31 @@ const HINT_HOLD := 3.2
 const COIN_PX := 40
 ## How long the solve sits on screen before the run-over card opens.
 const SOLVE_HOLD := 1.15
+## Roughly how long the whole auto-solve takes to play out, and the floor a
+## single move of it may be squeezed to.
+##
+## THE SOLVER'S LINE IS LONG. A 5x5 comes home in a couple of hundred moves, and
+## at the pace a finger moves a tile that is half a minute of watching a board
+## solve itself. The line is played at whatever pace fits this budget, so a short
+## board still moves at its normal speed and a long one runs.
+const SOLVE_SHOW_SECONDS := 7.0
+const SOLVE_MIN_MOVE := 0.03
+## The wall-clock leash the auto-solve hands the solver. Longer than the
+## solver's own default, because the search runs on a WORKER THREAD here: the
+## app stays live while it thinks, so the cost of a slow answer is a "Solving…"
+## beat rather than a frozen frame, and a hard 5x5 that used to die at the
+## main-thread deadline gets the room it needs.
+const AUTO_SOLVE_BUDGET_MS := 15_000
+## The most wall time one frame may charge to the run.
+##
+## THE CLOCK IS NOT THE FRAME CLOCK. Two things used to make it jump: a frame
+## that took a long time (the solver thinking, a theme swap, the app coming back
+## from the background) handed `_process` a delta of whole seconds and Rush ate
+## them in one go, and `Engine.time_scale` — which the solve flare drops to a
+## quarter — scales the delta, so time ran slow whenever the screen did. Both are
+## gone: the clock reads the monotonic wall clock and refuses to advance more
+## than this in a single step, so a stall costs the player nothing.
+const MAX_TICK := 0.25
 
 # --- Session ------------------------------------------------------------------
 var _mode: GameModes.Mode
@@ -42,6 +67,8 @@ var _par := 0
 var _elapsed := 0.0
 var _clock := 0.0              # Rush: seconds left
 var _clock_total := 0.0
+var _tick_ms := 0              # the wall clock the last tick was read at
+var _shown_second := -1        # the whole second the HUD is currently showing
 var _cleared := 0              # Rush: boards cleared this run
 var _history: Array = []       # board dicts before each of your moves (undo)
 var _undos_used := 0
@@ -49,6 +76,8 @@ var _paid_undos := 0
 var _used_undo := false
 var _hints_used := 0
 var _assisted := false         # the solver closed a board out for you
+var _solving := false          # the auto-solve is thinking or playing its line
+var _solve_thread: Thread = null
 var _paused := false
 var _ended := false
 var _blocked := false
@@ -68,6 +97,7 @@ var _view: BoardView
 var _view_holder: Control
 var _undo_btn: PremiumButton
 var _hint_btn: PremiumButton
+var _solve_btn: PremiumButton
 var _modal: ModalOverlay
 var _subtitle: Label
 var _rule_line: Label
@@ -120,6 +150,11 @@ func on_ready() -> void:
 	set_process(true)
 
 func _exit_tree() -> void:
+	# A worker still thinking is joined before the screen goes: a thread whose
+	# owner freed itself is a crash on whatever it touches when it lands.
+	if _solve_thread != null:
+		_solve_thread.wait_to_finish()
+		_solve_thread = null
 	if _theme_locked:
 		ThemeManager._apply(SettingsManager.theme_id())
 
@@ -156,6 +191,11 @@ func on_back() -> bool:
 		return true
 	if _ended:
 		return false
+	# While the solver is thinking or playing its line the door holds shut for
+	# the beat: leaving mid-think would tear the screen down under a live
+	# thread, and every path out of the solve hands the board back.
+	if _solving:
+		return true
 	_open_pause()
 	return true
 
@@ -218,9 +258,8 @@ func _build_top_bar(root: VBoxContainer) -> void:
 	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	# BACK, not pause. A pause glyph promises a paused clock, and only Rush has
 	# one; on every other board the button's real job is "let me out", and the
-	# sheet it opens is where Resume, a fresh board and the solver live. Leaving
-	# mid-run is safe either way: _save_session keeps the board for Home's
-	# Continue card.
+	# sheet it opens is where Resume and a fresh board live. Leaving mid-run is
+	# safe either way: _save_session keeps the board for Home's Continue card.
 	bar.add_child(UI.circle_button("back", "", _on_back_pressed, 96.0))
 	var titles := UI.vbox(0.0)
 	titles.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -274,9 +313,17 @@ func _build_controls(root: VBoxContainer) -> void:
 	_hint_btn = PremiumButton.new()
 	_hint_btn.variant = PremiumButton.Variant.GLASS
 	_hint_btn.pressed.connect(_on_hint)
+	# The solver's door lives ON the board, beside the other helplines, in every
+	# mode. It used to hide in the pause sheet and skip the timed modes, which
+	# read as the feature not existing; a stuck player looks at the board, not
+	# behind a pause glyph.
+	_solve_btn = PremiumButton.new()
+	_solve_btn.variant = PremiumButton.Variant.GHOST
+	_solve_btn.pressed.connect(_on_solve)
 	if _mode.allow_undo:
 		row.add_child(_undo_btn)
 	row.add_child(_hint_btn)
+	row.add_child(_solve_btn)
 	root.add_child(UI.constrain_width(row))
 	_refresh_pills()
 
@@ -293,7 +340,7 @@ func _build_size_row() -> Control:
 	return row
 
 func _pick_size(n: int) -> void:
-	if n == _size or _modal != null:
+	if n == _size or _modal != null or _solving:
 		return
 	if _board != null and _board.moves > 0 and not _ended:
 		var m := ModalOverlay.new()
@@ -336,6 +383,7 @@ func _begin_board() -> void:
 	_view.setup(_board.w, _board.h)
 	_view.deal_in(_board)
 	_hud.begin(_mode, _par)
+	_start_ticking()
 	_refresh_board_state()
 	_save_session()
 
@@ -350,6 +398,7 @@ func _restore(saved: Dictionary) -> void:
 	_cleared = int(saved.get("cleared", 0))
 	_used_undo = bool(saved.get("used_undo", false))
 	_hints_used = int(saved.get("hints", 0))
+	_assisted = bool(saved.get("assisted", false))
 	_size = _board.w
 	if _rules is RulesSprint:
 		var sr := _rules as RulesSprint
@@ -358,6 +407,9 @@ func _restore(saved: Dictionary) -> void:
 	_view.setup(_board.w, _board.h)
 	_view.sync_board(_board)
 	_hud.begin(_mode, _par)
+	if _assisted:
+		_hud.set_assisted()
+	_start_ticking()
 	_refresh_board_state()
 
 ## Pushes the rule's per-board state into the view, and the board's into the HUD.
@@ -373,13 +425,20 @@ func _refresh_board_state() -> void:
 		_view.set_locked(RulesLock.locked_cells(_board))
 		_view.set_live_group(lr.live_group(_board))
 	_view.mark_home(_board)
+	_refresh_hud()
+	_refresh_pills()
+
+## The bar, from the board as it stands. Split out because it is also called the
+## instant a move is applied, before the tray has finished drawing it.
+func _refresh_hud() -> void:
+	if _board == null or _hud == null or not is_instance_valid(_hud):
+		return
 	_hud.set_moves(_board.moves)
 	if _mode.has_timer:
 		_hud.set_clock(_clock, _clock_total)
 		_hud.set_cleared(_cleared)
 	else:
 		_hud.set_progress(_board.placed(), _board.tile_count())
-	_refresh_pills()
 
 # =============================================================================
 # Input
@@ -398,7 +457,7 @@ func _on_pivot_pressed(pivot: int) -> void:
 	_play({"pivot": pivot})
 
 func _play(move: Dictionary) -> void:
-	if _paused or _ended or _board == null or _view.is_busy():
+	if _paused or _ended or _solving or _board == null or _view.is_busy():
 		return
 	if not _rules.is_legal(_board, move):
 		# A move the rule refuses still gets an answer, so a tap is never a
@@ -419,6 +478,11 @@ func _play(move: Dictionary) -> void:
 	if is_instance_valid(_fx):
 		_fx.on_swipe(Vector2.ZERO)
 	Haptics.light()
+	# THE BAR IS NOT WAITING FOR THE ANIMATION. The move is already made — the
+	# rule mutated the board two lines up — so the counters state it now. They
+	# used to be refreshed from `_after_move`, which runs when the tile finishes
+	# sliding, and the whole bar visibly lagged the tap it was reporting.
+	_refresh_hud()
 	_view.apply(events, _after_move.bind(events))
 
 func _after_move(events: Array) -> void:
@@ -443,8 +507,11 @@ func _on_solved() -> void:
 	var score := EconomyRules.series_score(1, true, grade)
 	# THE ONE REPORT: the funnel banks the score, writes the mode record,
 	# unlocks the crowns and pays the coins. Nothing else on this screen earns.
+	# An assisted run reports too — it is a game played — but the funnel pays
+	# and records nothing for it, and it earns no solve badge here either.
 	Progression.record_series(_mode.id, true, 1, 0, grade, _used_undo, _elapsed)
-	Achievements.report_solve()
+	if not _assisted:
+		Achievements.report_solve()
 	_supernova()
 	Confetti.celebrate(self, 160)
 	AudioManager.play_sfx("victory")
@@ -461,8 +528,13 @@ func _on_solved() -> void:
 ## Rush: this board came out, the next one is already on the tray, and the clock
 ## just got paid. Nothing ends.
 func _on_board_cleared(e: Dictionary) -> void:
-	var paid := float(e.get("seconds", 0.0))
-	_clock = minf(_clock_total, _clock + paid)
+	var offered := float(e.get("seconds", 0.0))
+	# WHAT LANDED, not what was offered. The clock is capped at the run's own
+	# total, so a board cleared at fifty seconds banked ten of a twenty-two
+	# second reward — and the "+22" floating off the ring said otherwise.
+	var was := _clock
+	_clock = minf(_clock_total, _clock + offered)
+	var paid := _clock - was
 	# Banking the clear and dealing the next board are the CONDUCTOR's, once,
 	# for the move the player really made. `apply` stays free of side effects so
 	# the solver can search on it. See RulesSprint.bank_clear.
@@ -480,6 +552,7 @@ func _on_board_cleared(e: Dictionary) -> void:
 	if is_instance_valid(_fx):
 		_fx.on_merge(_view.cell_global(0) - global_position, _cleared)
 	_view.deal_in(_board)
+	_shown_second = -1
 	_refresh_board_state()
 	_flash_seconds(paid)
 	_save_session()
@@ -504,10 +577,12 @@ func _on_time_up() -> void:
 	_ended = true
 	_clear_session()
 	_view.interactive = false
-	var grade := Pace.STEADY if _cleared > 0 else Pace.ASSISTED
-	var score := _cleared * EconomyRules.ROUND_POINTS
+	# A run the solver touched is assisted whatever it cleared: the tally has a
+	# machine's boards in it, so none of it pays or counts.
+	var grade := Pace.STEADY if _cleared > 0 and not _assisted else Pace.ASSISTED
+	var score := EconomyRules.series_score(_cleared, _cleared > 0, grade)
 	Progression.record_series(_mode.id, _cleared > 0, _cleared, 0, grade, _used_undo, _elapsed)
-	if _cleared > 0:
+	if _cleared > 0 and not _assisted:
 		Achievements.report_solve()
 		Confetti.celebrate(self, 120)
 		AudioManager.play_sfx("victory")
@@ -580,23 +655,61 @@ func _rush_modal(score: int) -> void:
 # =============================================================================
 # Clocks
 # =============================================================================
-func _process(delta: float) -> void:
-	if _paused or _ended or _board == null:
+## Whether the run's time is running. A MODAL STOPS IT, all of them: the pause
+## sheet already did, but "not enough coins", "deal a fresh scramble?" and the
+## tray-size warning each put a card over the board and left Rush's clock
+## draining behind it, which is the player being charged for reading a question
+## the game asked. The auto-solve stops it too: the machine's thinking time and
+## its playback are not the player's seconds, on any clock.
+func _ticking() -> bool:
+	return not _paused and not _ended and not _solving \
+		and _board != null and _modal == null
+
+## Arms the clock at the top of a board. Everything the run measures is counted
+## from here, so the seconds the entrance and the deal-in spend are never billed.
+func _start_ticking() -> void:
+	_tick_ms = Time.get_ticks_msec()
+	_shown_second = -1
+
+## Reads the wall clock and hands back the seconds since the last tick, capped.
+## Also called whenever the run comes back from a stop, so the time it spent
+## stopped is never banked.
+func _tick() -> float:
+	var now := Time.get_ticks_msec()
+	var step := float(now - _tick_ms) / 1000.0
+	_tick_ms = now
+	return clampf(step, 0.0, MAX_TICK)
+
+func _process(_delta: float) -> void:
+	if not _ticking():
+		# Keep the base current so the paused stretch is not charged on resume.
+		_tick_ms = Time.get_ticks_msec()
 		return
-	_elapsed += delta
+	var step := _tick()
+	_elapsed += step
 	if not _mode.has_timer:
 		return
-	_clock -= delta
-	_hud.set_clock(_clock, _clock_total)
+	_clock = maxf(0.0, _clock - step)
+	_push_clock()
 	if _clock <= 0.0:
-		_clock = 0.0
 		_on_time_up()
+
+## The HUD only hears about the clock when the SECOND it shows changes. The ring
+## still needs its sweep every frame; the readout re-laying out sixty times a
+## second to print the same numeral did not.
+func _push_clock() -> void:
+	var second := int(ceil(_clock))
+	if second == _shown_second:
+		_hud.set_clock_arc(_clock, _clock_total)
+		return
+	_shown_second = second
+	_hud.set_clock(_clock, _clock_total)
 
 # =============================================================================
 # Helplines
 # =============================================================================
 func _on_undo() -> void:
-	if _history.is_empty() or _ended or _paused or _view.is_busy():
+	if _history.is_empty() or _ended or _paused or _solving or _view.is_busy():
 		return
 	var unlimited := EntitlementManager.has_capability("unlimited_undo")
 	if not unlimited and _undos_used >= _free_undos():
@@ -621,7 +734,7 @@ func _on_undo() -> void:
 	_save_session()
 
 func _on_hint() -> void:
-	if _ended or _paused or _view.is_busy() or _board == null:
+	if _ended or _paused or _solving or _view.is_busy() or _board == null:
 		return
 	if _hints_used >= _free_hints():
 		if not Wallet.use_consumable(BUNDLE_HINT, EconomyRules.HINT_PRICE):
@@ -662,6 +775,10 @@ func _refresh_pills() -> void:
 	if _hint_btn != null and is_instance_valid(_hint_btn):
 		_helpline_pill(_hint_btn, "Hint", maxi(0, _free_hints() - _hints_used),
 			EconomyRules.HINT_PRICE, false)
+	if _solve_btn != null and is_instance_valid(_solve_btn):
+		_solve_btn.icon = null
+		_solve_btn.text = "Solving…" if _solving else "Solve"
+		_solve_btn.disabled = _solving or _ended
 
 ## A helpline pill in one of its three states: unlimited, N free left, or a COIN
 ## PRICE.
@@ -710,14 +827,6 @@ func _open_pause() -> void:
 		_close_modal()
 		_paused = false
 		_restart())
-	# Solving it FOR you is a real action with a real cost: the board comes out,
-	# it pays its coins, and the grade says Assisted for ever. Offered because a
-	# player stuck on a 5x5 at midnight otherwise just closes the app.
-	if not _mode.has_timer:
-		m.add_action("Solve it for me", PremiumButton.Variant.GHOST, func() -> void:
-			_close_modal()
-			_paused = false
-			_auto_solve())
 	m.add_action("Home", PremiumButton.Variant.GHOST, func() -> void:
 		_close_modal()
 		_save_session()
@@ -725,41 +834,122 @@ func _open_pause() -> void:
 	_modal = m
 	m.open(self)
 
-## Plays the solver's whole path out on the tray, one move at a time. The run is
-## marked assisted, so it banks and it pays but it sets no record.
-func _auto_solve() -> void:
-	if _board == null or _ended:
+## Plays the solver's whole path out on the tray, one move at a time. The run
+## is marked assisted the moment a line is found: it counts as a game played
+## and NOTHING else — no score, no coins, no record. On Rush the line ends at
+## the board's own `cleared` and the run carries on, assisted for good.
+##
+## THE SEARCH RUNS ON A WORKER THREAD. It used to run on this one, and a hard
+## board held the whole app for up to six seconds — the tap read as a crash.
+## Here the tray is turned off, the pill says "Solving…", and the answer comes
+## back through call_deferred; the frame never stalls.
+func _on_solve() -> void:
+	if _solving or _ended or _paused or _board == null or _modal != null \
+			or _view.is_busy():
 		return
-	var path := SlideSolver.solve(_board, _rules)
+	_solving = true
+	_view.interactive = false
+	_view.set_hint(-1)
+	_refresh_pills()
+	# The thread gets its own snapshot and its own rules instance, so nothing it
+	# reads can be written by this thread while it thinks. `apply` is
+	# side-effect-free by law, so a fresh rules of the same mode searches
+	# identically; sync rebuilds any per-board state (Blind's lit rows) from the
+	# snapshot itself.
+	var snap := _board.clone()
+	var rules := SlideRules.make(_mode)
+	rules.sync(snap)
+	_solve_thread = Thread.new()
+	_solve_thread.start(func() -> Array[Dictionary]:
+		var path := SlideSolver.solve(snap, rules, AUTO_SOLVE_BUDGET_MS)
+		_solve_ready.call_deferred()
+		return path)
+
+## Back on the main thread with the worker done: join it, take its path.
+func _solve_ready() -> void:
+	var found: Variant = _solve_thread.wait_to_finish() if _solve_thread != null else []
+	_solve_thread = null
+	if _ended or _board == null or not is_instance_valid(_view):
+		_solving = false
+		return
+	var path: Array = found
 	if path.is_empty():
-		var m := ModalOverlay.new()
-		m.compact = true
-		m.set_header("SOLVER", "This one is beyond me",
-			"The board is too far from home to solve inside a moment.")
-		m.add_action("Okay", PremiumButton.Variant.PRIMARY, _close_modal)
-		_modal = m
-		m.open(self)
+		_solver_gave_up()
 		return
 	_assisted = true
-	_view.interactive = false
+	if is_instance_valid(_hud):
+		_hud.set_assisted()
+	_save_session()
+	_view.pace_scale = clampf(
+		SOLVE_SHOW_SECONDS / maxf(1.0, float(path.size()) * TileView.slide_dur()),
+		SOLVE_MIN_MOVE / maxf(0.001, TileView.slide_dur()), 1.0)
 	_step_solution(path, 0)
 
+## THE BOARD IS HANDED BACK. The solve turns the tray off while it plays its
+## line, and every way out of `_step_solution` that is not a finished board used
+## to leave it off — so a solve that stopped short did not just fail, it killed
+## the run: no tap did anything ever again and the only way out was the back
+## gesture. A player who asked for help and got a dead board has been given the
+## worst outcome the screen can produce.
+func _solver_gave_up() -> void:
+	_solving = false
+	_refresh_pills()
+	if is_instance_valid(_view):
+		_view.pace_scale = 1.0
+		if not _ended:
+			_view.interactive = true
+	var m := ModalOverlay.new()
+	m.compact = true
+	m.set_header("SOLVER", "This one is beyond me",
+		"The board is too far from home to solve inside a moment.")
+	m.add_action("Okay", PremiumButton.Variant.PRIMARY, _close_modal)
+	_modal = m
+	m.open(self)
+
 func _step_solution(path: Array, k: int) -> void:
-	if _ended or k >= path.size() or not is_instance_valid(_view):
+	if _ended or not is_instance_valid(_view):
+		return
+	if k >= path.size():
+		# The path ran out on a board that is not home. It can happen: the solver
+		# answers inside a deadline and a hard board may only get part of the way.
+		_solver_gave_up()
 		return
 	var events := _rules.apply(_board, path[k])
 	if events.is_empty():
+		_solver_gave_up()
 		return
 	_view.apply(events, func() -> void:
 		_refresh_board_state()
 		for e_v in events:
-			if String((e_v as Dictionary).get("type", "")) == "solved":
-				_on_solved()
-				return
+			var e: Dictionary = e_v
+			match String(e.get("type", "")):
+				"solved":
+					_solving = false
+					if is_instance_valid(_view):
+						_view.pace_scale = 1.0
+					_on_solved()
+					return
+				"cleared":
+					# Rush: the solver's line ends where the board came out. The
+					# clear is banked and the next scramble dealt exactly as a
+					# played clear is, and the board is handed straight back —
+					# the run continues, marked assisted.
+					_on_board_cleared(e)
+					_finish_assist()
+					return
 		_step_solution(path, k + 1))
 
+## Hands the tray back after an assisted line that did not end the run.
+func _finish_assist() -> void:
+	_solving = false
+	if is_instance_valid(_view):
+		_view.pace_scale = 1.0
+		if not _ended:
+			_view.interactive = true
+	_refresh_pills()
+
 func _confirm_restart() -> void:
-	if _modal != null or _ended:
+	if _modal != null or _ended or _solving:
 		return
 	var m := ModalOverlay.new()
 	m.compact = true
@@ -805,6 +995,7 @@ func _save_session() -> void:
 		"cleared": _cleared,
 		"hints": _hints_used,
 		"used_undo": _used_undo,
+		"assisted": _assisted,
 	}
 	SaveManager.set_section(SAVE_SECTION, sec)
 

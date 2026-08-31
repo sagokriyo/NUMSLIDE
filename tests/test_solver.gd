@@ -12,6 +12,7 @@ func run_tests() -> void:
 	_test_hint_is_a_legal_move()
 	_test_optimal_on_a_short_board()
 	_test_solve_brings_a_board_home()
+	_test_answers_inside_its_budget()
 	_test_solver_leaves_the_board_alone()
 	_test_pace_ladder()
 	_test_pace_grades()
@@ -93,19 +94,47 @@ func _test_optimal_on_a_short_board() -> void:
 
 func _test_solve_brings_a_board_home() -> void:
 	print("test_solve_brings_a_board_home:")
-	# The two sizes a solve has to hold at. A 5x5 is far past IDA*, so this is
-	# the group search proving it can chain a whole board together.
-	for size in [3, 4]:
-		var pair := _dealt("classic", 707, size)
-		var b: SlideBoard = pair[0]
-		var r: SlideRules = pair[1]
-		var path := SlideSolver.solve(b, r)
-		check("%dx%d: the solver found a way home" % [size, size], not path.is_empty())
-		if path.is_empty():
-			continue
-		for mv in path:
-			r.apply(b, mv)
-		check("%dx%d: and walking it solves the board" % [size, size], b.is_solved())
+	# EVERY SIZE CLASSIC DEALS, INCLUDING THE 5x5. It used to be tested at 3 and
+	# 4 only, and a 5x5 auto-solve failed outright on most boards for as long as
+	# that was true — the row's last PAIR is the placement that blows a plain
+	# search's budget, and only the big tray gets far enough for it to matter.
+	for size in [3, 4, 5]:
+		for seed_n in 2:
+			var pair := _dealt("classic", 707 + seed_n * 31, size)
+			var b: SlideBoard = pair[0]
+			var r: SlideRules = pair[1]
+			var path := SlideSolver.solve(b, r)
+			check("%dx%d seed %d: the solver found a way home"
+				% [size, size, seed_n], not path.is_empty())
+			if path.is_empty():
+				continue
+			for mv in path:
+				r.apply(b, mv)
+			check("%dx%d seed %d: and walking it solves the board"
+				% [size, size, seed_n], b.is_solved())
+	# TWIST, which nothing used to solve. Its hint fell through to greedy and
+	# passed the suite that way, so the auto-solve was broken on it from the day
+	# the mode shipped: the tray has no hole, so the search runs from both ends
+	# and meets in the middle, and nothing else here can stand in for it.
+	var tw := _dealt("twist", 909)
+	var tb: SlideBoard = tw[0]
+	var tr: SlideRules = tw[1]
+	var twist_path := SlideSolver.solve(tb, tr)
+	check("twist: the solver found a way home", not twist_path.is_empty())
+	for mv in twist_path:
+		check("twist: every turn it names is legal", tr.is_legal(tb, mv))
+		tr.apply(tb, mv)
+	check("twist: and walking it solves the board", tb.is_solved())
+	# Blind: the same tray as Classic under a rule that hides it. The solver can
+	# see what the player cannot, so a fog board must solve like any other.
+	var fg := _dealt("fog", 404)
+	var fb: SlideBoard = fg[0]
+	var fr: SlideRules = fg[1]
+	var fog_path := SlideSolver.solve(fb, fr)
+	check("blind: the solver found a way home", not fog_path.is_empty())
+	for mv in fog_path:
+		fr.apply(fb, mv)
+	check("blind: and walking it solves the board", fb.is_solved())
 	# Lockdown: the welds close behind the solver, so a path that placed a group
 	# out of order would jam and never finish.
 	var lock_pair := _dealt("lock", 55)
@@ -117,6 +146,31 @@ func _test_solve_brings_a_board_home() -> void:
 		lr.apply(lb, mv)
 	check("lockdown: and it solved without jamming", lb.is_solved())
 	check_eq("lockdown: every cell welded", RulesLock.locked_cells(lb).size(), lb.size())
+
+## THE DEADLINE IS THE PROMISE. Every strategy in the solver is capped by a wall
+## clock, and this is the test that says so — the auto-solve used to freeze the
+## app for forty seconds on a 4x4 and over three minutes on a Blind board, which
+## no node budget anywhere in the file would ever have caught.
+func _test_answers_inside_its_budget() -> void:
+	print("test_answers_inside_its_budget:")
+	# Generous slack over the budget: a headless CI box is not a phone, and one
+	# search step is allowed to overrun the deadline it checks between steps.
+	var solve_cap := SlideSolver.SOLVE_BUDGET_MS * 3
+	var hint_cap := SlideSolver.HINT_BUDGET_MS * 4
+	for m in GameModes.all():
+		var pair := _dealt(m.id, 616)
+		var b: SlideBoard = pair[0]
+		var r: SlideRules = pair[1]
+		var t0 := Time.get_ticks_msec()
+		SlideSolver.hint(b, r)
+		var hint_ms := Time.get_ticks_msec() - t0
+		check("'%s': the hint answers in %d ms, under %d"
+			% [m.id, hint_ms, hint_cap], hint_ms < hint_cap)
+		t0 = Time.get_ticks_msec()
+		SlideSolver.solve(b, r)
+		var solve_ms := Time.get_ticks_msec() - t0
+		check("'%s': the solve answers in %d ms, under %d"
+			% [m.id, solve_ms, solve_cap], solve_ms < solve_cap)
 
 ## The solver works on CLONES. A hint must never move the board it was asked
 ## about, or asking for one would play a move.
@@ -187,3 +241,17 @@ func _test_pace_grades() -> void:
 		var need := Pace.threshold(id, par)
 		check("'%s' names a reachable move count" % id, need > 0)
 		check_eq("and hitting it earns '%s'" % id, Pace.grade(need, par), id)
+
+	# THE TOP RUNG MUST BE REACHABLE. Par used to be the board's Manhattan
+	# distance times 1.2, and Manhattan is a LOWER BOUND on the moves left, not
+	# a solution length — measured over random 3x3 deals the shortest line runs
+	# about 1.47x it. So Perfect and usually Expert asked for fewer moves than
+	# the puzzle contained, and no player on any board could earn either. A grade
+	# nobody can reach is not a target, it is a lie the bar tells every run.
+	for size in [3, 4, 5]:
+		var deal := _dealt("classic", 4242, size)
+		var board: SlideBoard = deal[0]
+		var p := Pace.par_for(board)
+		var floor_moves := SlideSolver.distance(board)
+		check("%dx%d: Perfect asks for more moves than the board's own bound"
+			% [size, size], Pace.threshold(Pace.PERFECT, p) > floor_moves)

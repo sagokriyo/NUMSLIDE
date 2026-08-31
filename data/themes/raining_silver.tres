@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Silver Rain"
+fx_style = "playful"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.027, 0.031, 0.043, 1)
+surface = Color(0.06, 0.06, 0.07, 1)
+surface_alt = Color(0.10, 0.10, 0.12, 1)
+accent = Color(0.82, 0.86, 0.92, 1)
+accent_soft = Color(0.42, 0.58, 0.80, 1)
+text = Color(0.92, 0.93, 0.96, 1)
+text_muted = Color(0.60, 0.62, 0.68, 1)
+text_on_accent = Color(0.04, 0.04, 0.06, 1)
+cell_empty = Color(0.04, 0.04, 0.05, 1)
+cell_given = Color(0.10, 0.10, 0.13, 1)
+cell_selected = Color(0.22, 0.24, 0.32, 1)
+cell_peer = Color(0.06, 0.06, 0.08, 1)
+cell_same_number = Color(0.16, 0.17, 0.22, 1)
+cell_error = Color(0.55, 0.14, 0.18, 1)
+cell_correct = Color(0.08, 0.26, 0.14, 1)
+cell_text = Color(0.88, 0.90, 0.95, 1)
+cell_given_text = Color(0.92, 0.93, 0.96, 1)
+border_thin = Color(0.20, 0.22, 0.28, 1)
+border_box = Color(0.82, 0.86, 0.92, 1)
+enable_glow = true
+glow_color = Color(0.82, 0.86, 0.92, 0.40)
+shadow_strength = 0.42
+background_id = "rain_silver"
+board_style = "silver"
+bg_gradient_bottom = Color(0.006, 0.008, 0.014, 1)
+ambience_id = ""

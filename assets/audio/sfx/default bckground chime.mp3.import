@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c1k34auvxsynk"
+path="res://.godot/imported/default bckground chime.mp3-e290075d1796a10de09f054115b6111f.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/sfx/default bckground chime.mp3"
+dest_files=["res://.godot/imported/default bckground chime.mp3-e290075d1796a10de09f054115b6111f.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Event Horizon"
+fx_style = "living"
+category = "shop"
+colorblind_safe = false
+bg = Color(0.012, 0.012, 0.035, 1)
+surface = Color(0.04, 0.035, 0.085, 1)
+surface_alt = Color(0.07, 0.06, 0.13, 1)
+accent = Color(1.0, 0.54, 0.18, 1)
+accent_soft = Color(0.62, 0.36, 1.0, 1)
+text = Color(0.93, 0.92, 0.97, 1)
+text_muted = Color(0.55, 0.52, 0.68, 1)
+text_on_accent = Color(0.05, 0.02, 0.0, 1)
+enable_glow = true
+glow_color = Color(1.0, 0.54, 0.18, 0.5)
+shadow_strength = 0.6
+background_id = "blackhole"
+board_style = "void"
+bg_gradient_bottom = Color(0.005, 0.005, 0.015, 1)
+ambience_id = ""

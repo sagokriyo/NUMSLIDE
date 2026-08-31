@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "First Bloom"
+fx_style = "calm"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.11, 0.075, 0.105, 1)
+surface = Color(0.16, 0.11, 0.15, 1)
+surface_alt = Color(0.21, 0.145, 0.19, 1)
+accent = Color(0.99, 0.58, 0.72, 1)
+accent_soft = Color(1.0, 0.78, 0.86, 1)
+text = Color(0.98, 0.93, 0.95, 1)
+text_muted = Color(0.72, 0.60, 0.67, 1)
+text_on_accent = Color(0.16, 0.06, 0.10, 1)
+enable_glow = true
+glow_color = Color(0.99, 0.58, 0.72, 0.35)
+shadow_strength = 0.45
+background_id = "bonsai"
+board_style = "duskbloom"
+bg_gradient_bottom = Color(0.075, 0.05, 0.08, 1)
+ambience_id = ""

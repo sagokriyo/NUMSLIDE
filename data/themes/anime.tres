@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Anime"
+fx_style = "playful"
+category = "fun"
+colorblind_safe = false
+bg = Color(0.93, 0.95, 1, 1)
+surface = Color(1, 1, 1, 1)
+surface_alt = Color(0.9, 0.92, 1, 1)
+accent = Color(0.55, 0.35, 0.95, 1)
+accent_soft = Color(0.8, 0.6, 1, 1)
+text = Color(0.15, 0.12, 0.3, 1)
+text_muted = Color(0.45, 0.42, 0.6, 1)
+text_on_accent = Color(1, 1, 1, 1)
+cell_empty = Color(1, 1, 1, 1)
+cell_given = Color(0.9, 0.91, 0.98, 1)
+cell_selected = Color(0.75, 0.6, 1, 1)
+cell_peer = Color(0.9, 0.92, 1, 1)
+cell_same_number = Color(0.82, 0.74, 1, 1)
+cell_error = Color(1, 0.55, 0.65, 1)
+cell_correct = Color(0.65, 0.95, 0.78, 1)
+cell_text = Color(0.55, 0.25, 0.9, 1)
+cell_given_text = Color(0.15, 0.12, 0.3, 1)
+border_thin = Color(0.8, 0.82, 0.95, 1)
+border_box = Color(0.55, 0.35, 0.95, 1)
+enable_glow = true
+glow_color = Color(0.55, 0.35, 0.95, 0.4)
+shadow_strength = 0.22
+background_id = "anime"
+board_style = "cel"
+bg_gradient_bottom = Color(0.88, 0.84, 1, 1)
+ambience_id = "piano"

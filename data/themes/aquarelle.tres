@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Aquarelle"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.984, 0.973, 0.949, 1)
+surface = Color(1.0, 0.992, 0.976, 1)
+surface_alt = Color(0.929, 0.910, 0.871, 1)
+accent = Color(0.173, 0.435, 0.718, 1)
+accent_soft = Color(0.914, 0.647, 0.722, 1)
+text = Color(0.141, 0.188, 0.227, 1)
+text_muted = Color(0.369, 0.416, 0.463, 1)
+text_on_accent = Color(1.0, 1.0, 1.0, 1)
+cell_empty = Color(1.0, 0.992, 0.976, 1)
+cell_given = Color(0.929, 0.910, 0.871, 1)
+cell_selected = Color(0.80, 0.87, 0.96, 1)
+cell_peer = Color(0.95, 0.95, 0.93, 1)
+cell_same_number = Color(0.96, 0.86, 0.90, 1)
+cell_error = Color(0.97, 0.80, 0.80, 1)
+cell_correct = Color(0.84, 0.93, 0.85, 1)
+cell_text = Color(0.173, 0.435, 0.718, 1)
+cell_given_text = Color(0.141, 0.188, 0.227, 1)
+border_thin = Color(0.82, 0.80, 0.76, 1)
+border_box = Color(0.18, 0.28, 0.42, 1)
+enable_glow = false
+shadow_strength = 0.22
+background_id = "wash"
+board_style = "wash"
+bg_gradient_bottom = Color(0.95, 0.93, 0.90, 1)
+ambience_id = ""

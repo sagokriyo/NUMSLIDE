@@ -2,17 +2,41 @@
 .godot/
 /android/
 
-# Godot exports / builds
-/build/
-/builds/
-/export/
-*.tmp
+# Exported build artifacts (rebuildable; keep the large .aab/.apk out of git)
+build/
 
-# Android signing keys — never commit
+.vscode/
+
+# Android signing keys — NEVER commit these (anyone with the file + password can
+# sign as you). Back them up somewhere private outside the repo.
 *.keystore
 *.jks
 
-# OS junk
-.DS_Store
-Thumbs.db
-desktop.ini
+# Claude Code — per-machine local settings (absolute paths, local permissions)
+.claude/settings.local.json
+
+# Regression suite run artifacts (logs, summaries, save backups per run)
+regression/headless/.results/
+regression/android/.build/
+# Device probe reports (regression/perf/device/run_fx_probe.ps1 -Out). Same rule
+# as every other run artifact: the numbers belong in the commit message or a
+# doc, not as churn in the tree.
+/.results/
+
+# Probe screenshot scratch (tools/*_shot_probe.gd renders here). Same rule as
+# every other run artifact: a render is something you look at once while
+# iterating, not tree churn. The committed reference shots live in tools/out/.
+tools/.out/
+
+# Suite-watcher gradle build outputs (rebuildable; see build_suite_watcher.ps1)
+regression/android/suite_watcher/build/
+regression/android/suite_watcher/.gradle/
+
+regression/android/.build
+
+# Python bytecode from tools/ scripts
+__pycache__/
+*.pyc
+
+# Local export output (APKs are 80+ MB; the release lives on the Play Console)
+/build/

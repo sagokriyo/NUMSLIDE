@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Circuit Pulse"
+fx_style = "arcade"
+category = "shop"
+colorblind_safe = false
+bg = Color(0.020, 0.055, 0.038, 1)
+surface = Color(0.035, 0.085, 0.060, 1)
+surface_alt = Color(0.055, 0.115, 0.082, 1)
+accent = Color(0.20, 0.95, 0.60, 1)
+accent_soft = Color(0.35, 0.85, 1.0, 1)
+text = Color(0.88, 0.97, 0.92, 1)
+text_muted = Color(0.52, 0.68, 0.60, 1)
+text_on_accent = Color(0.01, 0.10, 0.05, 1)
+enable_glow = true
+glow_color = Color(0.20, 0.95, 0.60, 0.40)
+shadow_strength = 0.5
+background_id = "circuit"
+board_style = "matrix"
+bg_gradient_bottom = Color(0.012, 0.035, 0.026, 1)
+ambience_id = ""

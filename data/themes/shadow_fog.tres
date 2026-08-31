@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Shadow Fog"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.08, 0.09, 0.11, 1)
+surface = Color(0.12, 0.13, 0.17, 1)
+surface_alt = Color(0.16, 0.18, 0.23, 1)
+accent = Color(0.52, 0.72, 0.96, 1)
+accent_soft = Color(0.34, 0.50, 0.72, 1)
+text = Color(0.86, 0.88, 0.94, 1)
+text_muted = Color(0.54, 0.58, 0.70, 1)
+text_on_accent = Color(0.06, 0.08, 0.12, 1)
+cell_empty = Color(0.09, 0.10, 0.13, 1)
+cell_given = Color(0.14, 0.16, 0.22, 1)
+cell_selected = Color(0.20, 0.30, 0.50, 1)
+cell_peer = Color(0.12, 0.13, 0.18, 1)
+cell_same_number = Color(0.18, 0.24, 0.38, 1)
+cell_error = Color(0.55, 0.18, 0.22, 1)
+cell_correct = Color(0.10, 0.28, 0.20, 1)
+cell_text = Color(0.52, 0.72, 0.96, 1)
+cell_given_text = Color(0.86, 0.88, 0.94, 1)
+border_thin = Color(0.24, 0.28, 0.38, 1)
+border_box = Color(0.52, 0.72, 0.96, 1)
+enable_glow = true
+glow_color = Color(0.52, 0.72, 0.96, 0.35)
+shadow_strength = 0.38
+background_id = "shadow"
+board_style = "shadow"
+bg_gradient_bottom = Color(0.05, 0.06, 0.08, 1)
+ambience_id = ""

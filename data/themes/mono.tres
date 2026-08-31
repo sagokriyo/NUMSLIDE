@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Mono"
+fx_style = "calm"
+category = "premium"
+colorblind_safe = true
+bg = Color(0.949, 0.949, 0.949, 1)
+surface = Color(1.0, 1.0, 1.0, 1)
+surface_alt = Color(0.902, 0.902, 0.902, 1)
+accent = Color(0.902, 0.231, 0.180, 1)
+accent_soft = Color(0.55, 0.55, 0.55, 1)
+text = Color(0.067, 0.067, 0.067, 1)
+text_muted = Color(0.42, 0.42, 0.42, 1)
+text_on_accent = Color(1.0, 1.0, 1.0, 1)
+cell_empty = Color(1.0, 1.0, 1.0, 1)
+cell_given = Color(0.902, 0.902, 0.902, 1)
+cell_selected = Color(0.85, 0.85, 0.85, 1)
+cell_peer = Color(0.96, 0.96, 0.96, 1)
+cell_same_number = Color(0.88, 0.88, 0.88, 1)
+cell_error = Color(0.96, 0.80, 0.78, 1)
+cell_correct = Color(0.86, 0.90, 0.86, 1)
+cell_text = Color(0.902, 0.231, 0.180, 1)
+cell_given_text = Color(0.067, 0.067, 0.067, 1)
+border_thin = Color(0.80, 0.80, 0.80, 1)
+border_box = Color(0.067, 0.067, 0.067, 1)
+enable_glow = false
+shadow_strength = 0.10
+background_id = "mono"
+board_style = "mono"
+bg_gradient_bottom = Color(0.949, 0.949, 0.949, 1)
+ambience_id = ""

@@ -1,0 +1,57 @@
+name: Setup Godot
+description: Download (and cache) the Godot editor build for headless CI on Windows.
+
+inputs:
+  version:
+    description: Godot version tag, e.g. "4.7.1-stable".
+    required: false
+    default: "4.7.1-stable"
+
+outputs:
+  godot:
+    description: Absolute path to the Godot executable (console build preferred).
+    value: ${{ steps.locate.outputs.godot }}
+
+runs:
+  using: composite
+  steps:
+    - name: Cache Godot
+      id: cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}\godot
+        key: godot-${{ inputs.version }}-win64
+
+    - name: Download Godot
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: pwsh
+      run: |
+        $ver = "${{ inputs.version }}"
+        $zip = "Godot_v${ver}_win64.exe.zip"
+        $url = "https://github.com/godotengine/godot/releases/download/${ver}/${zip}"
+        $dest = "${{ runner.temp }}\godot"
+        New-Item -ItemType Directory -Force -Path $dest | Out-Null
+        Write-Host "Downloading $url"
+        Invoke-WebRequest -Uri $url -OutFile "$dest\godot.zip"
+        Expand-Archive -Path "$dest\godot.zip" -DestinationPath $dest -Force
+        Remove-Item "$dest\godot.zip"
+
+    - name: Locate Godot
+      id: locate
+      shell: pwsh
+      run: |
+        # The official Windows editor zip ships both the GUI exe and a
+        # _console.exe wrapper. Prefer the console build: it attaches stdout so
+        # --headless output (and SCRIPT ERROR lines) reach the redirected logs,
+        # exactly as run_all.ps1 expects locally.
+        $root = "${{ runner.temp }}\godot"
+        $exe = Get-ChildItem -Path $root -Filter "Godot_v*_win64_console.exe" -Recurse |
+          Select-Object -First 1
+        if (-not $exe) {
+          $exe = Get-ChildItem -Path $root -Filter "Godot_v*_win64.exe" -Recurse |
+            Where-Object { $_.Name -notlike "*console*" } | Select-Object -First 1
+        }
+        if (-not $exe) { throw "Godot executable not found under $root after download." }
+        "godot=$($exe.FullName)" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+        Write-Host "Using Godot: $($exe.FullName)"
+        & $exe.FullName --version

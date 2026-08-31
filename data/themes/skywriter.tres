@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Skywriter"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.045, 0.02, 0.075, 1)
+surface = Color(0.085, 0.045, 0.13, 1)
+surface_alt = Color(0.125, 0.07, 0.185, 1)
+accent = Color(0.35, 0.98, 0.75, 1)
+accent_soft = Color(0.98, 0.72, 0.50, 1)
+text = Color(0.95, 0.97, 0.96, 1)
+text_muted = Color(0.62, 0.60, 0.72, 1)
+text_on_accent = Color(0.02, 0.09, 0.06, 1)
+enable_glow = true
+glow_color = Color(0.35, 0.98, 0.75, 0.5)
+shadow_strength = 0.5
+background_id = "skywriter"
+board_style = "comet"
+bg_gradient_bottom = Color(0.022, 0.009, 0.04, 1)
+ambience_id = ""

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Ink Wash"
+fx_style = "calm"
+category = "shop"
+colorblind_safe = true
+bg = Color(0.937, 0.914, 0.855, 1)
+surface = Color(0.968, 0.949, 0.906, 1)
+surface_alt = Color(0.902, 0.875, 0.808, 1)
+accent = Color(0.275, 0.376, 0.541, 1)
+accent_soft = Color(0.55, 0.63, 0.75, 1)
+text = Color(0.149, 0.165, 0.20, 1)
+text_muted = Color(0.43, 0.45, 0.50, 1)
+text_on_accent = Color(0.97, 0.96, 0.93, 1)
+enable_glow = false
+glow_color = Color(0.275, 0.376, 0.541, 0.35)
+shadow_strength = 0.3
+background_id = "inkwash"
+board_style = "ink"
+bg_gradient_bottom = Color(0.878, 0.851, 0.784, 1)
+ambience_id = ""

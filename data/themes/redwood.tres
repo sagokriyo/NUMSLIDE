@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Redwood"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.051, 0.090, 0.063, 1)
+surface = Color(0.090, 0.145, 0.102, 1)
+surface_alt = Color(0.133, 0.208, 0.165, 1)
+accent = Color(0.949, 0.769, 0.420, 1)
+accent_soft = Color(0.561, 0.749, 0.478, 1)
+text = Color(0.933, 0.961, 0.925, 1)
+text_muted = Color(0.576, 0.682, 0.557, 1)
+text_on_accent = Color(0.08, 0.10, 0.05, 1)
+cell_empty = Color(0.07, 0.12, 0.08, 1)
+cell_given = Color(0.133, 0.208, 0.165, 1)
+cell_selected = Color(0.30, 0.40, 0.22, 1)
+cell_peer = Color(0.10, 0.16, 0.12, 1)
+cell_same_number = Color(0.22, 0.34, 0.20, 1)
+cell_error = Color(0.40, 0.12, 0.10, 1)
+cell_correct = Color(0.14, 0.36, 0.20, 1)
+cell_text = Color(0.949, 0.769, 0.420, 1)
+cell_given_text = Color(0.933, 0.961, 0.925, 1)
+border_thin = Color(0.18, 0.26, 0.20, 1)
+border_box = Color(0.949, 0.769, 0.420, 1)
+enable_glow = true
+glow_color = Color(0.95, 0.77, 0.42, 0.35)
+shadow_strength = 0.45
+background_id = "redwood"
+board_style = "redwood"
+bg_gradient_bottom = Color(0.03, 0.06, 0.03, 1)
+ambience_id = ""

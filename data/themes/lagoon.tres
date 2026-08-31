@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Lagoon"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.839, 0.953, 0.941, 1)
+surface = Color(0.965, 0.992, 0.988, 1)
+surface_alt = Color(0.749, 0.914, 0.894, 1)
+accent = Color(0.039, 0.561, 0.616, 1)
+accent_soft = Color(0.72, 0.76, 0.75, 1)
+text = Color(0.055, 0.227, 0.247, 1)
+text_muted = Color(0.290, 0.455, 0.471, 1)
+text_on_accent = Color(1.0, 1.0, 1.0, 1)
+cell_empty = Color(0.965, 0.992, 0.988, 1)
+cell_given = Color(0.749, 0.914, 0.894, 1)
+cell_selected = Color(0.60, 0.88, 0.86, 1)
+cell_peer = Color(0.90, 0.97, 0.96, 1)
+cell_same_number = Color(0.80, 0.94, 0.92, 1)
+cell_error = Color(0.98, 0.80, 0.78, 1)
+cell_correct = Color(0.84, 0.94, 0.86, 1)
+cell_text = Color(0.039, 0.561, 0.616, 1)
+cell_given_text = Color(0.055, 0.227, 0.247, 1)
+border_thin = Color(0.68, 0.84, 0.82, 1)
+border_box = Color(0.04, 0.36, 0.40, 1)
+enable_glow = false
+shadow_strength = 0.20
+background_id = "lagoon"
+board_style = "lagoon"
+bg_gradient_bottom = Color(0.76, 0.91, 0.89, 1)
+ambience_id = ""

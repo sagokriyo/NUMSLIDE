@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Peacock"
+fx_style = "vivid"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.015, 0.038, 0.056, 1)
+surface = Color(0.026, 0.062, 0.086, 1)
+surface_alt = Color(0.040, 0.096, 0.128, 1)
+accent = Color(0.14, 0.86, 0.78, 1)
+accent_soft = Color(0.20, 0.52, 0.68, 1)
+text = Color(0.92, 0.99, 0.98, 1)
+text_muted = Color(0.54, 0.74, 0.78, 1)
+text_on_accent = Color(0.01, 0.06, 0.08, 1)
+cell_empty = Color(0.021, 0.052, 0.072, 1)
+cell_given = Color(0.040, 0.096, 0.128, 1)
+cell_selected = Color(0.08, 0.28, 0.32, 1)
+cell_peer = Color(0.030, 0.070, 0.096, 1)
+cell_same_number = Color(0.06, 0.20, 0.24, 1)
+cell_error = Color(0.48, 0.14, 0.24, 1)
+cell_correct = Color(0.08, 0.32, 0.24, 1)
+cell_text = Color(0.34, 0.94, 0.86, 1)
+cell_given_text = Color(0.92, 0.99, 0.98, 1)
+border_thin = Color(0.10, 0.24, 0.30, 1)
+border_box = Color(0.14, 0.86, 0.78, 1)
+enable_glow = true
+glow_color = Color(0.16, 0.88, 0.80, 0.52)
+shadow_strength = 0.52
+background_id = "plumage"
+board_style = "plume"
+bg_gradient_bottom = Color(0.006, 0.016, 0.028, 1)
+ambience_id = ""

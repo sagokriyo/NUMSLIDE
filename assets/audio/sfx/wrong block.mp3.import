@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c2nc5kpjn7hxl"
+path="res://.godot/imported/wrong block.mp3-e89689c694021f72eb95cd5d4a4b6650.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/sfx/wrong block.mp3"
+dest_files=["res://.godot/imported/wrong block.mp3-e89689c694021f72eb95cd5d4a4b6650.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

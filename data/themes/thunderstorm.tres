@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Thunderstorm"
+fx_style = "living"
+category = "aesthetic"
+colorblind_safe = false
+bg = Color(0.05, 0.06, 0.10, 1)
+surface = Color(0.09, 0.10, 0.15, 1)
+surface_alt = Color(0.13, 0.14, 0.20, 1)
+accent = Color(0.75, 0.88, 1.0, 1)
+accent_soft = Color(0.88, 0.95, 1.0, 1)
+text = Color(0.90, 0.93, 0.98, 1)
+text_muted = Color(0.52, 0.57, 0.68, 1)
+text_on_accent = Color(0.04, 0.05, 0.10, 1)
+cell_empty = Color(0.07, 0.08, 0.13, 1)
+cell_given = Color(0.12, 0.14, 0.20, 1)
+cell_selected = Color(0.20, 0.28, 0.46, 1)
+cell_peer = Color(0.10, 0.12, 0.18, 1)
+cell_same_number = Color(0.18, 0.24, 0.38, 1)
+cell_error = Color(0.48, 0.14, 0.16, 1)
+cell_correct = Color(0.12, 0.28, 0.24, 1)
+cell_text = Color(0.75, 0.88, 1.0, 1)
+cell_given_text = Color(0.90, 0.93, 0.98, 1)
+border_thin = Color(0.18, 0.20, 0.28, 1)
+border_box = Color(0.55, 0.72, 0.95, 1)
+enable_glow = true
+glow_color = Color(0.75, 0.88, 1.0, 0.55)
+shadow_strength = 0.50
+background_id = "rain"
+board_style = "storm"
+bg_gradient_bottom = Color(0.02, 0.03, 0.07, 1)
+ambience_id = "rain"

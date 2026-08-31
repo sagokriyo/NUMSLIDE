@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Carnival"
+fx_style = "arcade"
+category = "fun"
+colorblind_safe = false
+bg = Color(0.07, 0.03, 0.10, 1)
+surface = Color(0.12, 0.05, 0.16, 1)
+surface_alt = Color(0.16, 0.07, 0.20, 1)
+accent = Color(1.0, 0.30, 0.40, 1)
+accent_soft = Color(1.0, 0.80, 0.30, 1)
+text = Color(0.99, 0.94, 0.92, 1)
+text_muted = Color(0.74, 0.60, 0.62, 1)
+text_on_accent = Color(0.10, 0.0, 0.02, 1)
+cell_empty = Color(0.05, 0.02, 0.08, 1)
+cell_given = Color(0.12, 0.05, 0.16, 1)
+cell_selected = Color(0.30, 0.10, 0.20, 1)
+cell_peer = Color(0.08, 0.04, 0.12, 1)
+cell_same_number = Color(0.22, 0.08, 0.16, 1)
+cell_error = Color(0.60, 0.14, 0.18, 1)
+cell_correct = Color(0.12, 0.28, 0.16, 1)
+cell_text = Color(1.0, 0.80, 0.30, 1)
+cell_given_text = Color(0.99, 0.94, 0.92, 1)
+border_thin = Color(0.24, 0.10, 0.20, 1)
+border_box = Color(1.0, 0.30, 0.40, 1)
+enable_glow = true
+glow_color = Color(1.0, 0.45, 0.40, 0.55)
+shadow_strength = 0.5
+background_id = "fireworks"
+board_style = "bigtop"
+bg_gradient_bottom = Color(0.03, 0.01, 0.06, 1)
+ambience_id = ""

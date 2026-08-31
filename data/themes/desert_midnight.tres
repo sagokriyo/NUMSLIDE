@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Arabian Night"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.06, 0.04, 0.14, 1)
+surface = Color(0.10, 0.08, 0.22, 1)
+surface_alt = Color(0.15, 0.12, 0.32, 1)
+accent = Color(0.98, 0.84, 0.36, 1)
+accent_soft = Color(1.0, 0.94, 0.66, 1)
+text = Color(0.98, 0.94, 0.84, 1)
+text_muted = Color(0.68, 0.60, 0.42, 1)
+text_on_accent = Color(0.06, 0.04, 0.00, 1)
+cell_empty = Color(0.08, 0.06, 0.16, 1)
+cell_given = Color(0.14, 0.11, 0.28, 1)
+cell_selected = Color(0.32, 0.24, 0.08, 1)
+cell_peer = Color(0.10, 0.08, 0.20, 1)
+cell_same_number = Color(0.22, 0.16, 0.06, 1)
+cell_error = Color(0.50, 0.10, 0.14, 1)
+cell_correct = Color(0.10, 0.28, 0.18, 1)
+cell_text = Color(0.98, 0.84, 0.36, 1)
+cell_given_text = Color(0.98, 0.94, 0.84, 1)
+border_thin = Color(0.22, 0.18, 0.40, 1)
+border_box = Color(0.98, 0.84, 0.36, 1)
+enable_glow = true
+glow_color = Color(0.98, 0.84, 0.36, 0.48)
+shadow_strength = 0.46
+background_id = "desert"
+board_style = "desert"
+bg_gradient_bottom = Color(0.10, 0.08, 0.24, 1)
+ambience_id = ""

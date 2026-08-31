@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Sanctum"
+fx_style = "living"
+category = "shop"
+colorblind_safe = false
+bg = Color(0.045, 0.03, 0.105, 1)
+surface = Color(0.085, 0.06, 0.165, 1)
+surface_alt = Color(0.125, 0.09, 0.225, 1)
+accent = Color(0.66, 0.44, 0.98, 1)
+accent_soft = Color(0.95, 0.78, 0.42, 1)
+text = Color(0.95, 0.93, 0.99, 1)
+text_muted = Color(0.62, 0.56, 0.76, 1)
+text_on_accent = Color(0.05, 0.02, 0.09, 1)
+enable_glow = true
+glow_color = Color(0.66, 0.44, 0.98, 0.5)
+shadow_strength = 0.55
+background_id = "stained_glass"
+board_style = "amethyst"
+bg_gradient_bottom = Color(0.022, 0.014, 0.055, 1)
+ambience_id = ""

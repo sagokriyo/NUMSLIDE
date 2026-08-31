@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Noir"
+fx_style = "calm"
+category = "premium"
+colorblind_safe = true
+bg = Color(0.0, 0.0, 0.0, 1)
+surface = Color(0.043, 0.043, 0.047, 1)
+surface_alt = Color(0.082, 0.082, 0.090, 1)
+accent = Color(0.949, 0.910, 0.835, 1)
+accent_soft = Color(0.56, 0.42, 0.24, 1)
+text = Color(0.961, 0.945, 0.910, 1)
+text_muted = Color(0.478, 0.459, 0.424, 1)
+text_on_accent = Color(0.06, 0.05, 0.04, 1)
+cell_empty = Color(0.030, 0.030, 0.035, 1)
+cell_given = Color(0.082, 0.082, 0.090, 1)
+cell_selected = Color(0.25, 0.22, 0.18, 1)
+cell_peer = Color(0.08, 0.08, 0.09, 1)
+cell_same_number = Color(0.20, 0.18, 0.15, 1)
+cell_error = Color(0.35, 0.08, 0.10, 1)
+cell_correct = Color(0.08, 0.25, 0.15, 1)
+cell_text = Color(0.949, 0.910, 0.835, 1)
+cell_given_text = Color(0.961, 0.945, 0.910, 1)
+border_thin = Color(0.14, 0.14, 0.15, 1)
+border_box = Color(0.949, 0.910, 0.835, 1)
+enable_glow = true
+glow_color = Color(0.95, 0.91, 0.84, 0.35)
+shadow_strength = 0.6
+background_id = "noir"
+board_style = "noir"
+bg_gradient_bottom = Color(0.0, 0.0, 0.0, 1)
+ambience_id = ""

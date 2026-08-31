@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Coral Depths"
+fx_style = "vivid"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.04, 0.08, 0.16, 1)
+surface = Color(0.04, 0.08, 0.15, 1)
+surface_alt = Color(0.06, 0.12, 0.22, 1)
+accent = Color(0.95, 0.40, 0.68, 1)
+accent_soft = Color(0.38, 0.96, 0.88, 1)
+text = Color(0.92, 0.96, 1.0, 1)
+text_muted = Color(0.52, 0.70, 0.82, 1)
+text_on_accent = Color(0.02, 0.04, 0.10, 1)
+cell_empty = Color(0.03, 0.06, 0.12, 1)
+cell_given = Color(0.07, 0.12, 0.22, 1)
+cell_selected = Color(0.24, 0.08, 0.32, 1)
+cell_peer = Color(0.04, 0.09, 0.16, 1)
+cell_same_number = Color(0.16, 0.06, 0.24, 1)
+cell_error = Color(0.50, 0.10, 0.20, 1)
+cell_correct = Color(0.06, 0.26, 0.32, 1)
+cell_text = Color(0.38, 0.96, 0.88, 1)
+cell_given_text = Color(0.92, 0.96, 1.0, 1)
+border_thin = Color(0.12, 0.22, 0.38, 1)
+border_box = Color(0.95, 0.40, 0.68, 1)
+enable_glow = true
+glow_color = Color(0.95, 0.40, 0.68, 0.50)
+shadow_strength = 0.48
+background_id = "deep_sea"
+board_style = "coral"
+bg_gradient_bottom = Color(0.008, 0.02, 0.05, 1)
+ambience_id = ""

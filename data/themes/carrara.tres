@@ -1,0 +1,35 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Carrara"
+fx_style = "calm"
+category = "premium"
+colorblind_safe = true
+bg = Color(0.968, 0.965, 0.953, 1)
+surface = Color(1.0, 1.0, 1.0, 1)
+surface_alt = Color(0.925, 0.918, 0.902, 1)
+accent = Color(0.690, 0.553, 0.341, 1)
+accent_soft = Color(0.70, 0.69, 0.67, 1)
+text = Color(0.118, 0.114, 0.106, 1)
+text_muted = Color(0.431, 0.416, 0.392, 1)
+text_on_accent = Color(0.12, 0.11, 0.10, 1)
+cell_empty = Color(1.0, 1.0, 1.0, 1)
+cell_given = Color(0.925, 0.918, 0.902, 1)
+cell_selected = Color(0.831, 0.725, 0.549, 1)
+cell_peer = Color(0.953, 0.941, 0.918, 1)
+cell_same_number = Color(0.902, 0.851, 0.753, 1)
+cell_error = Color(0.941, 0.788, 0.753, 1)
+cell_correct = Color(0.839, 0.910, 0.816, 1)
+cell_text = Color(0.52, 0.40, 0.22, 1)
+cell_given_text = Color(0.118, 0.114, 0.106, 1)
+border_thin = Color(0.82, 0.80, 0.77, 1)
+border_box = Color(0.40, 0.34, 0.24, 1)
+enable_glow = false
+shadow_strength = 0.18
+background_id = "marble"
+board_style = "marble"
+bg_gradient_bottom = Color(0.93, 0.92, 0.90, 1)
+ambience_id = ""

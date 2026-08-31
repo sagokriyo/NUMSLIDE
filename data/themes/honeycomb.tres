@@ -1,0 +1,36 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Honeycomb"
+fx_style = "living"
+category = "premium"
+colorblind_safe = false
+bg = Color(0.055, 0.036, 0.012, 1)
+surface = Color(0.094, 0.062, 0.020, 1)
+surface_alt = Color(0.145, 0.096, 0.030, 1)
+accent = Color(1.00, 0.74, 0.16, 1)
+accent_soft = Color(0.78, 0.50, 0.16, 1)
+text = Color(0.99, 0.94, 0.82, 1)
+text_muted = Color(0.76, 0.62, 0.40, 1)
+text_on_accent = Color(0.10, 0.06, 0.00, 1)
+cell_empty = Color(0.075, 0.050, 0.016, 1)
+cell_given = Color(0.145, 0.096, 0.030, 1)
+cell_selected = Color(0.34, 0.23, 0.05, 1)
+cell_peer = Color(0.10, 0.07, 0.02, 1)
+cell_same_number = Color(0.24, 0.16, 0.04, 1)
+cell_error = Color(0.52, 0.14, 0.07, 1)
+cell_correct = Color(0.14, 0.28, 0.08, 1)
+cell_text = Color(1.00, 0.80, 0.26, 1)
+cell_given_text = Color(0.99, 0.94, 0.82, 1)
+border_thin = Color(0.28, 0.19, 0.06, 1)
+border_box = Color(1.00, 0.74, 0.16, 1)
+enable_glow = true
+glow_color = Color(1.00, 0.72, 0.18, 0.50)
+shadow_strength = 0.50
+background_id = "honeycomb"
+board_style = "honey"
+bg_gradient_bottom = Color(0.020, 0.013, 0.004, 1)
+ambience_id = ""

@@ -1,0 +1,75 @@
+name: Verify Tests (mutation)
+
+# Proves the regression tests can actually FAIL. verify_tests.ps1 plants a known
+# bug per test file, asserts the right test goes red, restores the file, then
+# re-proves green. A test nobody has watched fail is not evidence of anything —
+# this workflow is what keeps that honest.
+#
+# Triggers:
+#   pull_request (tests/** or regression/**) — a NEW test can't merge without
+#       being proven able to fail.
+#   push to main — re-proves the whole ledger after every merge, so a PRODUCT
+#       change that quietly defuses an existing test (moving the line a mutation
+#       anchors on, or weakening an assertion) is caught on main rather than
+#       discovered months later. Three anchors went stale during the 2026-07
+#       fix pass exactly this way; the runner reports those as
+#       "SETUP ERROR: anchor found 0x", which fails the job.
+#   schedule — a weekly backstop for drift that no diff touched.
+#
+# It deliberately mutates product code in the ephemeral checkout (never the
+# developer's tree), and takes ~40 min, which is why it is not on every commit.
+
+on:
+  pull_request:
+    paths:
+      - "tests/**"
+      - "regression/**"
+  push:
+    branches: [main, master]
+  schedule:
+    # Sundays 04:23 UTC — after the nightly regression run has settled.
+    - cron: "23 4 * * 0"
+  workflow_dispatch:
+
+concurrency:
+  group: verify-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.7.1-stable"
+
+jobs:
+  mutate:
+    name: Prove tests can fail
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        id: godot
+        uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+
+      - name: Mutation verification
+        shell: pwsh
+        run: |
+          # Exits with the number of problems (a test that failed to catch its
+          # bug, a stale anchor, or a cleanup mismatch); 0 means every test file
+          # was proven able to fail. Mutations are applied to the ephemeral
+          # checkout and restored.
+          regression\headless\verify_tests.ps1 -Godot "${{ steps.godot.outputs.godot }}"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verify-tests-results
+          path: regression/headless/.results/**
+          if-no-files-found: ignore
+          retention-days: 14

@@ -1,0 +1,77 @@
+name: Regression Suite
+
+# The headless regression suite, split into two tiers (see regression/STRATEGY.md
+# and regression/testcases/INDEX.md):
+#
+#   Basic — the import gate + every --script unit/service suite. Deterministic,
+#           no booted game, ~40s locally. Runs on EVERY pull request so a PR gets
+#           fast, high-signal feedback.
+#   Full  — EVERYTHING: Basic plus the full-boot flows, the scene smokes and the
+#           boot smoke. Runs on merge to main and nightly, where the extra minutes
+#           are free and the exhaustive answer is what matters.
+#
+# Full is a superset, so main is always covered by the strictest gate. Runs on
+# Windows so CI executes the exact PowerShell runner developers use locally (the
+# save-backup path and Godot invocation are Windows paths).
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  schedule:
+    # 03:17 UTC nightly — an odd minute to avoid the top-of-hour runner rush.
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: "Which tier to run"
+        type: choice
+        options: [Full, Basic]
+        default: Full
+
+concurrency:
+  group: regression-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  GODOT_VERSION: "4.7.1-stable"
+
+jobs:
+  headless:
+    # A pull_request event runs Basic; push-to-main, the nightly schedule and a
+    # manual dispatch run Full (dispatch can override to Basic).
+    name: Headless ${{ (github.event_name == 'pull_request' && 'Basic') || inputs.tier || 'Full' }} (Godot 4.7.1)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Godot
+        id: godot
+        uses: ./.github/actions/setup-godot
+        with:
+          version: ${{ env.GODOT_VERSION }}
+
+      - name: Run regression suite
+        shell: pwsh
+        env:
+          TIER: ${{ (github.event_name == 'pull_request' && 'Basic') || inputs.tier || 'Full' }}
+        run: |
+          # run_all.ps1 exits with the number of failed tests; that propagates
+          # here and fails the job. It backs up/restores the (nonexistent) CI
+          # save on its own.
+          Write-Host "Running the $env:TIER tier"
+          regression\headless\run_all.ps1 -Tier $env:TIER -Godot "${{ steps.godot.outputs.godot }}"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: regression-results-${{ (github.event_name == 'pull_request' && 'basic') || 'full' }}
+          path: regression/headless/.results/**
+          if-no-files-found: ignore
+          retention-days: 14

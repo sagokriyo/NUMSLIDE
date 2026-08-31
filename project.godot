@@ -10,20 +10,67 @@ config_version=5
 
 [application]
 
-config/name="NUMSLIDE"
+config/name="NUMSLIDE Limitless"
+config/description="Five ways to slide. Numbers made of glass."
+config/version="0.1.0"
+run/main_scene="res://scenes/intro/intro.tscn"
 config/features=PackedStringArray("4.7", "Mobile")
-config/icon="res://icon.svg"
+boot_splash/bg_color=Color(0, 0, 0, 1)
+boot_splash/show_image=false
+config/icon="res://icon.png"
+
+[autoload]
+
+SaveManager="*res://autoload/save_manager.gd"
+SettingsManager="*res://autoload/settings_manager.gd"
+EntitlementManager="*res://autoload/entitlement_manager.gd"
+BillingService="*res://autoload/billing_service.gd"
+GodotPlayGameServices="*uid://yf8pyslliq1j"
+DesignSystem="*res://autoload/design_system.gd"
+ScrollEnhancer="*res://autoload/scroll_enhancer.gd"
+ThemeManager="*res://autoload/theme_manager.gd"
+AudioManager="*res://autoload/audio_manager.gd"
+Haptics="*res://autoload/haptics.gd"
+GameStats="*res://autoload/game_stats.gd"
+Achievements="*res://autoload/achievements.gd"
+PlayGames="*res://autoload/play_games.gd"
+AccountManager="*res://autoload/account_manager.gd"
+AdManager="*res://autoload/ad_manager.gd"
+Wallet="*res://autoload/wallet.gd"
+Progression="*res://autoload/progression.gd"
+SceneRouter="*res://autoload/scene_router.gd"
 
 [display]
 
+window/size/viewport_width=1080
+window/size/viewport_height=2340
+window/size/resizable=false
+window/frame_pacing/android/swappy_mode=0
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
+window/handheld/orientation=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/android_IAPP/plugin.cfg", "res://addons/GodotPlayGameServices/plugin.cfg")
+
+[input_devices]
+
+buffering/agile_event_flushing=true
+pointing/emulate_touch_from_mouse=true
+pointing/drag_start_distance=6
 
 [physics]
 
 3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true
 
 [rendering]
 
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true
+anti_aliasing/quality/msaa_2d=1
+environment/defaults/default_clear_color=Color(0, 0, 0, 1)
+anti_aliasing/quality/msaa_2d.mobile=1

@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="ThemeData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://data/themes/theme_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+display_name = "Ronin"
+fx_style = "calm"
+category = "shop"
+colorblind_safe = false
+bg = Color(0.027, 0.031, 0.05, 1)
+surface = Color(0.06, 0.07, 0.105, 1)
+surface_alt = Color(0.09, 0.105, 0.15, 1)
+accent = Color(0.91, 0.28, 0.37, 1)
+accent_soft = Color(0.62, 0.70, 0.85, 1)
+text = Color(0.93, 0.94, 0.97, 1)
+text_muted = Color(0.55, 0.58, 0.68, 1)
+text_on_accent = Color(0.06, 0.01, 0.02, 1)
+enable_glow = true
+glow_color = Color(0.91, 0.28, 0.37, 0.45)
+shadow_strength = 0.55
+background_id = "katana"
+board_style = "lacquer"
+bg_gradient_bottom = Color(0.014, 0.016, 0.028, 1)
+ambience_id = ""
